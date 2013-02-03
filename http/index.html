@@ -44,7 +44,7 @@ textarea {
         settings = readSettings()
         $('#apikey').val(settings.source.apikey)
 
-        exec('touch ~/tool/scraper; chmod a+x ~/tool/scraper; cat ~/tool/scraper').done(function(data) {
+        exec('touch ~/tool/scraper; cat ~/tool/scraper').done(function(data) {
           $('#code').val(data)
         })
 
@@ -52,8 +52,12 @@ textarea {
           $('p.loading').show()
           var code = $('#code').val()
 	  console.log(code)
+	  if (code.substr(0,2) != "#!") {
+            alert("The first line must specify the command to run, e.g. #! /usr/bin/ruby")
+	    return
+	  }
           var cmd = "cd ~/tool; cat >scraper.new <<ENDOFSCRAPER\n" + code + "\nENDOFSCRAPER\n"
-	  cmd = cmd + "mv scraper.new scraper; ./scraper"
+	  cmd = cmd + "chmod a+x scraper.new; mv scraper.new scraper; ./scraper"
 	  console.log(cmd)
           exec(cmd).done(function(output) {
             $('p.loading').hide()
