@@ -6,35 +6,37 @@
     <link rel="stylesheet" href="http://x.scraperwiki.com/vendor/style/bootstrap.min.css">
     <link rel="stylesheet" href="http://x.scraperwiki.com/vendor/style/metro.bootstrap.css">
     <style type="text/css">
-body {
-  padding: 20px;
-}
-
-h2 {
-  margin-top: 0;
-}
-
-.muted {
-  margin-right: 10px;
-}
-
-textarea {
-  width: 90%;
-}
+	body {
+        padding: 20px;
+        height: 100%;
+	}
+	html {
+        height: 100%;
+	}
+    #editor { 
+        width: 100%;
+        height: 55%;
+    }
+    #output { 
+        width: 100%;
+        height: 40%;
+    }
 
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
     <script src="https://x.scraperwiki.com/js/custard.js"></script>
+    <script src="ace/ace.js" type="text/javascript" charset="utf-8"></script>
   </head>
   <body>
 
+   <div id="editor"></div>
+
    <form id="tw" action="#" method="POST" enctype="multipart/form-data">
-      <textarea id="code" name="code" rows="15" cols="80"></textarea>
-      <br>
       <input type="button" value="Run!" id="run">
       <br>
-      <textarea id="console" name="console" rows="15" cols="80"></textarea>
     </form>
+
+   <div id="output"></div>
 
    <script>
       var escapeshell = function(cmd) {
@@ -44,24 +46,35 @@ textarea {
         settings = readSettings()
         $('#apikey').val(settings.source.apikey)
 
+	var editor;
         exec('touch ~/tool/scraper; cat ~/tool/scraper').done(function(data) {
-          $('#code').val(data)
+	  editor = ace.edit("editor")
+          editor.setValue(data)
+    	  editor.setTheme("ace/theme/monokai")
+    	  editor.getSession().setMode("ace/mode/python")
+	  editor.clearSelection()
+	  editor.focus()
         })
+
+	var output = ace.edit("output")
+    	output.setTheme("ace/theme/monokai")
+    	output.getSession().setMode("ace/mode/sh")
 
         $('#run').on('click', function() {
           $('p.loading').show()
-          var code = $('#code').val()
-	  console.log(code)
+          var code = editor.getValue();
+	  //console.log(code)
 	  if (code.substr(0,2) != "#!") {
             alert("The first line must specify the command to run, e.g. #! /usr/bin/ruby")
 	    return
 	  }
           var cmd = "cd ~/tool; cat >scraper.new <<ENDOFSCRAPER\n" + code + "\nENDOFSCRAPER\n"
 	  cmd = cmd + "chmod a+x scraper.new; mv scraper.new scraper; ./scraper"
-	  console.log(cmd)
-          exec(cmd).done(function(output) {
+	  //console.log(cmd)
+          exec(cmd).done(function(text) {
             $('p.loading').hide()
-	    $('#console').val(output)
+	    output.setValue(text)
+	    output.clearSelection()
           });
         })
       })
