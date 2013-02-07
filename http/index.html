@@ -94,6 +94,7 @@
                 alert("The first line must specify the command to run, e.g. #! /usr/bin/ruby")
                 return
             }
+            output.setValue("")
             var cmd = "cd ~/tool; cat >scraper.new <<ENDOFSCRAPER\n" + code + "\nENDOFSCRAPER\n"
             cmd = cmd + "chmod a+x scraper.new; mv scraper.new scraper; ./scraper"
             //console.log(cmd)
