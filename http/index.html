@@ -4,52 +4,62 @@
     <meta charset="utf-8">
     <title>Code your own dataset!</title>
     <link rel="stylesheet" href="http://x.scraperwiki.com/vendor/style/bootstrap.min.css">
-    <link rel="stylesheet" href="http://x.scraperwiki.com/vendor/style/metro.bootstrap.css">
-    <style type="text/css">
-	body {
-        padding: 20px;
-        height: 100%;
-	}
-	html {
-        height: 100%;
-	}
-    #editor { 
-        width: 100%;
-        height: 55%;
-    }
-    #output { 
-        width: 100%;
-        height: 40%;
-    }
+    <link rel="stylesheet" href="http://x.scraperwiki.com/vendor/style/scraperstrap.css">
+    <link rel="stylesheet" href="code-in-browser.css">
 
-    </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
     <script src="https://x.scraperwiki.com/js/scraperwiki.js"></script>
     <script src="ace/ace.js" type="text/javascript" charset="utf-8"></script>
     <script src="http://sharejs.org/channel/bcsocket.js"></script>
     <script src="http://sharejs.org/share/share.js"></script>
     <script src="http://sharejs.org/share/ace.js"></script>
+    <script src="code-in-browser.js"></script>
   </head>
   <body>
 
    <div id="editor"></div>
 
    <form id="tw" action="#" method="POST" enctype="multipart/form-data">
-      <input type="button" value="Run!" id="run">
+      <!--<input type="button" value="Run!" id="run"> -->
+      <button class="btn btn-primary" type="button" id="run">Run!</button>
+      <img id="running-animation" src="running.gif" style="display: none">
+
       <br>
     </form>
 
    <div id="output"></div>
 
    <script>
+
+    var editor;
+    var output;
+
+    var do_run = function() {
+        $('p.loading').show()
+        var code = editor.getValue();
+        //console.log(code)
+        if (code.substr(0,2) != "#!") {
+            alert("The first line must specify the command to run, e.g. #! /usr/bin/ruby")
+            return
+        }
+        output.setValue("")
+        var cmd = "cd ~/tool; cat >scraper.new <<ENDOFSCRAPER\n" + code + "\nENDOFSCRAPER\n"
+        cmd = cmd + "chmod a+x scraper.new; mv scraper.new scraper; ./scraper"
+        //console.log(cmd)
+        scraperwiki.exec(cmd).done(function(text) {
+            $('p.loading').hide()
+            output.setValue(text)
+            output.clearSelection()
+        });
+    }
     var escapeshell = function(cmd) {
       return "'"+cmd.replace(/'/g,"'\\''")+"'";
-    };
+    }
+    
     $(document).ready(function() {
         settings = scraperwiki.readSettings()
         $('#apikey').val(settings.source.apikey)
 
-        var editor;
         scraperwiki.exec('touch ~/tool/scraper; cat ~/tool/scraper').done(function(data) {
             editor = ace.edit("editor")
 
@@ -82,28 +92,12 @@
             editor.focus()
         })
 
-        var output = ace.edit("output")
+        output = ace.edit("output")
         output.setTheme("ace/theme/monokai")
         output.getSession().setMode("ace/mode/sh")
 
-        $('#run').on('click', function() {
-            $('p.loading').show()
-            var code = editor.getValue();
-            //console.log(code)
-            if (code.substr(0,2) != "#!") {
-                alert("The first line must specify the command to run, e.g. #! /usr/bin/ruby")
-                return
-            }
-            output.setValue("")
-            var cmd = "cd ~/tool; cat >scraper.new <<ENDOFSCRAPER\n" + code + "\nENDOFSCRAPER\n"
-            cmd = cmd + "chmod a+x scraper.new; mv scraper.new scraper; ./scraper"
-            //console.log(cmd)
-            scraperwiki.exec(cmd).done(function(text) {
-                $('p.loading').hide()
-                output.setValue(text)
-                output.clearSelection()
-            });
-        })
+        $('#run').on('click', do_run)
+        
     })
     </script>
 
