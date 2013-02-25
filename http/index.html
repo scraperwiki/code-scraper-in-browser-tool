@@ -134,6 +134,9 @@
 
         editor.setReadOnly(true);
         editor.getSession().setUseSoftTabs(true);
+        if (data == "") {
+         data = "#!/usr/bin/python\n\nimport scraperwiki\n\n"
+        }
         set_editor_mode(data)
         editor.setTheme("ace/theme/monokai");
 
@@ -150,6 +153,7 @@
           }
 
           doc.attach_ace(editor)
+          editor.setValue(data)
           editor.moveCursorTo(0, 0)
           editor.setReadOnly(false)
           editor.focus()
