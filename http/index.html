@@ -13,91 +13,91 @@
     <script src="http://sharejs.org/channel/bcsocket.js"></script>
     <script src="http://sharejs.org/share/share.js"></script>
     <script src="http://sharejs.org/share/ace.js"></script>
-    <script src="code-in-browser.js"></script>
   </head>
   <body>
 
-   <div id="editor"></div>
+  <div id="editor"></div>
 
-   <form id="tw" action="#" method="POST" enctype="multipart/form-data">
-      <!--<input type="button" value="Run!" id="run"> -->
-      <button class="btn btn-primary" type="button" id="run">Run!</button>
-      <img id="running-animation" src="running.gif" style="display: none">
+  <form id="buttonbar" action="#" method="POST" enctype="multipart/form-data">
+    <!--<input type="button" value="Run!" id="run"> -->
+    <button class="btn btn-info" type="button" id="docs">Documentation</button>
+    <button class="btn btn-primary" type="button" id="run">Run!</button>
+    <img id="running-animation" src="running.gif" style="display: none">
+  </form>
 
-      <br>
-    </form>
+  <div id="output"></div>
 
-   <div id="output"></div>
-
-   <script>
+    <script>
 
     var editor;
     var output;
 
-    var do_run = function() {
-        $('p.loading').show()
-        var code = editor.getValue();
-        //console.log(code)
-        if (code.substr(0,2) != "#!") {
-            alert("The first line must specify the command to run, e.g. #! /usr/bin/ruby")
-            return
-        }
-        output.setValue("")
-        var cmd = "cd ~/tool; cat >scraper.new <<ENDOFSCRAPER\n" + code + "\nENDOFSCRAPER\n"
-        cmd = cmd + "chmod a+x scraper.new; mv scraper.new scraper; ./scraper"
-        //console.log(cmd)
-        scraperwiki.exec(cmd).done(function(text) {
-            $('p.loading').hide()
-            output.setValue(text)
-            output.clearSelection()
-        });
+    var do_docs = function() {
+      window.open("https://scraperwiki.com/docs/", "_blank")
     }
-    var escapeshell = function(cmd) {
-      return "'"+cmd.replace(/'/g,"'\\''")+"'";
+
+    // When the "run" button is pressed
+    var do_run = function() {
+      $('p.loading').show()
+      var code = editor.getValue();
+      //console.log(code)
+      if (code.substr(0,2) != "#!") {
+          alert("The first line must specify the command to run, e.g. #! /usr/bin/ruby")
+          return
+      }
+      output.setValue("")
+      var cmd = "cd ~/tool; cat >scraper.new <<ENDOFSCRAPER\n" + code + "\nENDOFSCRAPER\n"
+      cmd = cmd + "chmod a+x scraper.new; mv scraper.new scraper; ./scraper"
+      //console.log(cmd)
+      scraperwiki.exec(cmd).done(function(text) {
+          $('p.loading').hide()
+          output.setValue(text)
+          output.clearSelection()
+      });
     }
     
     $(document).ready(function() {
-        settings = scraperwiki.readSettings()
-        $('#apikey').val(settings.source.apikey)
+      settings = scraperwiki.readSettings()
+      $('#apikey').val(settings.source.apikey)
 
-        scraperwiki.exec('touch ~/tool/scraper; cat ~/tool/scraper').done(function(data) {
-            editor = ace.edit("editor")
+      scraperwiki.exec('touch ~/tool/scraper; cat ~/tool/scraper').done(function(data) {
+        editor = ace.edit("editor")
 
-            editor.setReadOnly(true);
-            editor.getSession().setUseSoftTabs(true);
-            editor.getSession().setMode("ace/mode/python");
-            editor.setTheme("ace/theme/monokai");
+        editor.setReadOnly(true);
+        editor.getSession().setUseSoftTabs(true);
+        editor.getSession().setMode("ace/mode/python");
+        editor.setTheme("ace/theme/monokai");
 
-            if (!document.location.hash) {
-                // XXX need a better token in here. API key?
-                document.location.hash = '#scraperwiki-' + scraperwiki.boxName; 
-            }
-            var docName = "code:" + document.location.hash.slice(1);
+        if (!document.location.hash) {
+          // XXX need a better token in here. API key?
+          document.location.hash = '#scraperwiki-' + scraperwiki.boxName; 
+        }
+        var docName = "code:" + document.location.hash.slice(1);
 
-            sharejs.open(docName, 'text', 'http://seagrass.goatchurch.org.uk/sharejs/channel', function(error, doc) {
-                if (error) {
-                    console.error(error);
-                    return;
-                }
+        sharejs.open(docName, 'text', 'http://seagrass.goatchurch.org.uk/sharejs/channel', function(error, doc) {
+          if (error) {
+            console.error(error);
+            return;
+          }
 
-                if (doc.created) {
-                    doc.insert(0, data);
-                }
+          if (doc.created) {
+            doc.insert(0, data);
+          }
 
-                doc.attach_ace(editor);
-                editor.setReadOnly(false);
-            });
+          doc.attach_ace(editor);
+          editor.setReadOnly(false);
+        });
 
-            editor.clearSelection()
-            editor.focus()
-        })
+        editor.clearSelection()
+        editor.focus()
+      })
 
-        output = ace.edit("output")
-        output.setTheme("ace/theme/monokai")
-        output.getSession().setMode("ace/mode/sh")
+      output = ace.edit("output")
+      output.setTheme("ace/theme/monokai")
+      output.getSession().setMode("ace/mode/sh")
 
-        $('#run').on('click', do_run)
-        
+      $('#docs').on('click', do_docs)
+      $('#run').on('click', do_run)
     })
     </script>
 
