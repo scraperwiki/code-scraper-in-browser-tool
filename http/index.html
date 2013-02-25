@@ -113,7 +113,10 @@
         }
 
         scraperwiki.exec("cat logs/out").done(function(text) {
-          output.setValue(text)
+          // XXX detect no file a better way
+          if (text != "cat: logs/out: No such file or directory\n") {
+            output.setValue(text)
+          }
           output.clearSelection()
           if (again) {
            setTimeout(poll_output, 1)
