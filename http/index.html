@@ -34,6 +34,35 @@
     var editor;
     var output;
 
+
+    // Work out language we're in
+    var set_editor_mode = function(code) {
+      var first = code.split("\n")[0]
+      if (first.substr(0,2) != "#!") {
+          show_status()
+          scraperwiki.alert("Specify language in the first line!", "For example, put <code>#!/usr/bin/ruby</code>, <code>#!/usr/bin/R</code> or <code>#!/usr/bin/python</code>.", false)
+          return false
+      }
+      if (first.indexOf("python") != -1) {
+        editor.getSession().setMode("ace/mode/python");
+      } else if (first.indexOf("ruby") != -1) {
+        editor.getSession().setMode("ace/mode/ruby");
+      } else if (first.indexOf("R") != -1) {
+        editor.getSession().setMode("ace/mode/r");
+      } else if (first.indexOf("node") != -1) {
+        editor.getSession().setMode("ace/mode/javascript");
+      } else if (first.indexOf("coffee") != -1) {
+        editor.getSession().setMode("ace/mode/coffee");
+      } else if (first.indexOf("clojure") != -1) {
+        editor.getSession().setMode("ace/mode/clojure");
+      } else if (first.indexOf("sh") != -1) {
+        editor.getSession().setMode("ace/mode/sh");
+      } else {
+        editor.getSession().setMode("ace/mode/text");
+      }
+      return true
+    }
+ 
     // When the "documentation" button is pressed
     var do_docs = function() {
       window.open("https://scraperwiki.com/docs/", "_blank")
@@ -51,9 +80,8 @@
       $("#run").text("Running...").removeClass("btn-primary").addClass("btn-warning")
 
       var code = editor.getValue();
-      if (code.substr(0,2) != "#!") {
-          scraperwiki.alert("Specify language in the first line!", "For example, put <code>#!/usr/bin/ruby</code>, <code>#!/usr/bin/R</code> or <code>#!/usr/bin/python</code>.", false)
-          return
+      if (!set_editor_mode(code)) {
+        return
       }
       output.setValue("")
 
@@ -75,7 +103,7 @@
 
         editor.setReadOnly(true);
         editor.getSession().setUseSoftTabs(true);
-        editor.getSession().setMode("ace/mode/python");
+        set_editor_mode(data)
         editor.setTheme("ace/theme/monokai");
 
         if (!document.location.hash) {
@@ -86,20 +114,16 @@
 
         sharejs.open(docName, 'text', 'http://seagrass.goatchurch.org.uk/sharejs/channel', function(error, doc) {
           if (error) {
-            console.error(error);
-            return;
+            scraperwiki.alert("Trouble setting up pair editing!", error, true)
+            return
           }
 
-          if (doc.created) {
-            doc.insert(0, data);
-          }
-
-          doc.attach_ace(editor);
-          editor.setReadOnly(false);
+          doc.attach_ace(editor)
+          editor.moveCursorTo(0, 0)
+          editor.setReadOnly(false)
+          editor.focus()
         });
 
-        editor.clearSelection()
-        editor.focus()
       })
 
       output = ace.edit("output")
