@@ -1,0 +1,29 @@
+#!/bin/bash
+
+
+# Disable buffering of stdout/stderr
+# XXX can we do this in other languages?
+export PYTHONUNBUFFERED=1
+
+# Check already running
+if pgrep -f "./scraper" >/dev/null
+then
+    echo -n "running"
+    exit 0
+fi
+
+# Run in background, redirecting to logfile
+if [ "$1" == "run" ]
+then
+    mkdir -p logs/
+    ./scraper >logs/out 2>&1 &
+
+    # Say it is now running
+    echo -n "running"
+    exit 0
+fi
+
+# Say whether it is running
+echo -n "nothing"
+
+

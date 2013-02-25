@@ -69,15 +69,18 @@
     }
 
     // Show/hide things according to current state
-    var show_status = function() {
+    var show_status = function(status) {
       $(".alert").remove()
-      $("#run").text("Run!").removeClass("btn-warning").addClass("btn-primary")
+      if (status == "running") {
+        $("#run").text("Running...").removeClass("btn-primary").addClass("btn-warning")
+      } else {
+        $("#run").text("Run!").removeClass("btn-warning").addClass("btn-primary")
+      }
     }
 
     // When the "run" button is pressed
     var do_run = function() {
-      show_status()
-      $("#run").text("Running...").removeClass("btn-primary").addClass("btn-warning")
+      show_status("running")
 
       var code = editor.getValue();
       if (!set_editor_mode(code)) {
@@ -86,12 +89,38 @@
       output.setValue("")
 
       var cmd = "cat >scraper.new <<ENDOFSCRAPER\n" + code + "\nENDOFSCRAPER\n"
-      cmd = cmd + "chmod a+x scraper.new; mv scraper.new scraper; ./scraper"
+      cmd = cmd + "chmod a+x scraper.new; mv scraper.new scraper; ./tool/enrunerate run"
       scraperwiki.exec(cmd).done(function(text) {
+          console.log("enrunerate run:", text)
+          // Now output any output
+          poll_output()
+      });
+    }
+
+    // Get more output
+    var poll_output = function() {
+      scraperwiki.exec("./tool/enrunerate").done(function(text) {
+        console.log("enrunerate:", text)
+
+        var again = true
+        if (text == "running") {
+          show_status("running")
+        } else if (text == "nothing") {
+          show_status("nothing")
+          again = false
+        } else {
+          scraperwiki.alert("Unknown enrunerate error!", text, true)
+          return
+        }
+
+        scraperwiki.exec("cat logs/out").done(function(text) {
           output.setValue(text)
           output.clearSelection()
-          show_status()
-      });
+          if (again) {
+           setTimeout(poll_output, 1)
+          }
+        })
+      })
     }
     
     $(document).ready(function() {
@@ -122,6 +151,8 @@
           editor.moveCursorTo(0, 0)
           editor.setReadOnly(false)
           editor.focus()
+
+          poll_output()
         });
 
       })
