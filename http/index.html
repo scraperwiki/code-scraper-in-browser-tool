@@ -85,7 +85,7 @@
       }
       output.setValue("")
 
-      var cmd = "cd ~/tool; cat >scraper.new <<ENDOFSCRAPER\n" + code + "\nENDOFSCRAPER\n"
+      var cmd = "cat >scraper.new <<ENDOFSCRAPER\n" + code + "\nENDOFSCRAPER\n"
       cmd = cmd + "chmod a+x scraper.new; mv scraper.new scraper; ./scraper"
       scraperwiki.exec(cmd).done(function(text) {
           output.setValue(text)
@@ -98,7 +98,7 @@
       settings = scraperwiki.readSettings()
       $('#apikey').val(settings.source.apikey)
 
-      scraperwiki.exec('touch ~/tool/scraper; cat ~/tool/scraper').done(function(data) {
+      scraperwiki.exec('touch scraper; cat scraper').done(function(data) {
         editor = ace.edit("editor")
 
         editor.setReadOnly(true);
