@@ -92,18 +92,22 @@
       }
       output.setValue("")
 
+      // Save code
       var cmd = "cat >scraper.new <<ENDOFSCRAPER\n" + code + "\nENDOFSCRAPER\n"
       cmd = cmd + "chmod a+x scraper.new; mv scraper.new scraper; ./tool/enrunerate run"
-      scraperwiki.exec(cmd).done(function(text) {
+      scraperwiki.exec(cmd, function(text) {
           console.log("enrunerate run:", text)
           // Now output any output
           poll_output()
-      });
+      }, function(jqXHR, textStatus, errorThrown) {
+          scraperwiki.alert(errorThrown, jqXHR.responseText, "error")
+      })
+
     }
 
     // Get more output
     var poll_output = function() {
-      scraperwiki.exec("./tool/enrunerate").done(function(text) {
+      scraperwiki.exec("./tool/enrunerate", function(text) {
         console.log("enrunerate:", text)
 
         var again = true
@@ -117,7 +121,7 @@
           return
         }
 
-        scraperwiki.exec("cat logs/out").done(function(text) {
+        scraperwiki.exec("cat logs/out", function(text) {
           // XXX detect no file a better way
           if (text != "cat: logs/out: No such file or directory\n") {
             output.setValue(text)
@@ -126,7 +130,11 @@
           if (again) {
            setTimeout(poll_output, 1)
           }
+        }, function(jqXHR, textStatus, errorThrown) {
+            scraperwiki.alert(errorThrown, jqXHR.responseText, "error")
         })
+      }, function(jqXHR, textStatus, errorThrown) {
+          scraperwiki.alert(errorThrown, jqXHR.responseText, "error")
       })
     }
     
@@ -134,7 +142,7 @@
       settings = scraperwiki.readSettings()
       $('#apikey').val(settings.source.apikey)
 
-      scraperwiki.exec('touch scraper; cat scraper').done(function(data) {
+      scraperwiki.exec('touch scraper; cat scraper', function(data) {
         editor = ace.edit("editor")
 
         editor.setReadOnly(true);
@@ -165,8 +173,10 @@
 
           poll_output()
         });
-
+      }, function(jqXHR, textStatus, errorThrown) {
+          scraperwiki.alert(errorThrown, jqXHR.responseText, "error")
       })
+
 
       output = ace.edit("output")
       output.setTheme("ace/theme/monokai")
