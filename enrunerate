@@ -1,5 +1,8 @@
 #!/bin/bash
 
+PARAM=$1
+FLOCK="flock -n ./scraper.flock ./scraper"
+
 # Parameters:
 # "run" to actually launch scraper if not already
 # Otherwise just return status
@@ -11,21 +14,21 @@ export PYTHONUNBUFFERED=1
 # Check already running
 # XXX this won't work on multiple servers without affinity of some kind
 # perhaps instead can rely on the flock?
-if pgrep -f "./scraper" >/dev/null
+if pgrep -f "^$FLOCK$" >/dev/null
 then
     echo -n "running"
     exit 0
 fi
 
 # Run in background, redirecting to logfile
-if [ "$1" == "run" ]
+if [ "$PARAM" == "run" ]
 then
     mkdir -p logs/
 
     # Use flock to lock the launch, to be sure we only run one copy
     # (we can ignore errors - it is already running and we only want one at a time!)
     # XXX does flock really work on glusterfs?
-    flock -n ./scraper.flock ./scraper >logs/out 2>&1 &
+    $FLOCK >logs/out 2>&1 &
 
     # Say it is now running
     echo -n "running"
