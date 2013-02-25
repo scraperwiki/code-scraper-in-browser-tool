@@ -33,18 +33,21 @@
     var editor;
     var output;
 
+    // When the "documentation" button is pressed
     var do_docs = function() {
       window.open("https://scraperwiki.com/docs/", "_blank")
     }
 
     // Show/hide things according to current state
-    var set_status = function() {
+    var show_status = function() {
       $(".alert").remove()
+      $("#run").text("Run!").removeClass("btn-warning").addClass("btn-primary")
     }
 
     // When the "run" button is pressed
     var do_run = function() {
-      set_status()
+      show_status()
+      $("#run").text("Running...").removeClass("btn-primary").addClass("btn-warning")
 
       var code = editor.getValue();
       if (code.substr(0,2) != "#!") {
@@ -58,6 +61,7 @@
       scraperwiki.exec(cmd).done(function(text) {
           output.setValue(text)
           output.clearSelection()
+          show_status()
       });
     }
     
