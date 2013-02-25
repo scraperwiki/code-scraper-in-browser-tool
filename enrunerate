@@ -1,11 +1,16 @@
 #!/bin/bash
 
+# Parameters:
+# "run" to actually launch scraper if not already
+# Otherwise just return status
 
 # Disable buffering of stdout/stderr
 # XXX can we do this in other languages?
 export PYTHONUNBUFFERED=1
 
 # Check already running
+# XXX this won't work on multiple servers without affinity of some kind
+# perhaps instead can rely on the flock?
 if pgrep -f "./scraper" >/dev/null
 then
     echo -n "running"
@@ -16,7 +21,11 @@ fi
 if [ "$1" == "run" ]
 then
     mkdir -p logs/
-    ./scraper >logs/out 2>&1 &
+
+    # Use flock to lock the launch, to be sure we only run one copy
+    # (we can ignore errors - it is already running and we only want one at a time!)
+    # XXX does flock really work on glusterfs?
+    flock -n ./scraper.flock ./scraper >logs/out 2>&1 &
 
     # Say it is now running
     echo -n "running"
