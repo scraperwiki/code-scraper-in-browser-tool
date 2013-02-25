@@ -69,7 +69,6 @@
 
     // Show/hide things according to current state
     var show_status = function(status) {
-      $(".alert").remove()
       if (status == "running") {
         $("#run").text("Running...").removeClass("btn-primary").addClass("btn-warning")
       } else {
@@ -77,9 +76,15 @@
       }
     }
 
+    // Clear any errors
+    var clear_alerts = function(status) {
+      $(".alert").remove()
+    }
+
     // When the "run" button is pressed
     var do_run = function() {
       show_status("running")
+      clear_alerts()
 
       var code = editor.getValue();
       if (!set_editor_mode(code)) {
