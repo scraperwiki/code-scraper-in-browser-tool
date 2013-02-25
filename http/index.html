@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="code-in-browser.css">
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
+    <script src="jquery.hotkeys-0.7.9.min.js"></script>
     <script src="https://x.scraperwiki.com/vendor/js/bootstrap.min.js"></script>
     <script src="https://x.scraperwiki.com/js/scraperwiki.js"></script>
     <script src="ace/ace.js" type="text/javascript" charset="utf-8"></script>
@@ -22,7 +23,7 @@
   <form id="buttonbar" action="#" method="POST" enctype="multipart/form-data">
     <!--<input type="button" value="Run!" id="run"> -->
     <button class="btn btn-info" type="button" id="docs">Documentation</button>
-    <button class="btn btn-primary" type="button" id="run">Run!</button>
+    <button class="btn btn-primary" type="button" id="run" title="Ctrl+R Cmd+R">Run!</button>
     <img id="running-animation" src="running.gif" style="display: none">
   </form>
 
@@ -107,6 +108,7 @@
 
       $('#docs').on('click', do_docs)
       $('#run').on('click', do_run)
+      $(document).bind('keydown', 'ctrl+r', do_run)
     })
     </script>
 
