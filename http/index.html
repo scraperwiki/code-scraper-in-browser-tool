@@ -96,21 +96,6 @@
       return true
     }
  
-    // When the "documentation" button is pressed
-    var do_docs = function() {
-      window.open("https://scraperwiki.com/docs/", "_blank")
-    }
-
-    // When the "bugs" button is pressed
-    var do_bugs = function() {
-      window.open("https://github.com/frabcus/code-scraper-in-browser-tool/issues", "_blank")
-    }
-
-    // When the "keys" button is pressed
-    var do_keys = function() {
-      window.open("https://github.com/ajaxorg/ace/wiki/Default-Keyboard-Shortcuts", "_blank")
-    }
-
     // Show/hide things according to current state
     var show_status = function(status) {
       if (status == "running") {
@@ -148,6 +133,21 @@
       }, function(jqXHR, textStatus, errorThrown) {
           scraperwiki.alert(errorThrown, jqXHR.responseText, "error")
       })
+    }
+
+    // When the "documentation" button is pressed
+    var do_docs = function() {
+      window.open("https://scraperwiki.com/docs/", "_blank")
+    }
+
+    // When the "bugs" button is pressed
+    var do_bugs = function() {
+      window.open("https://github.com/frabcus/code-scraper-in-browser-tool/issues", "_blank")
+    }
+
+    // When the "keys" button is pressed
+    var do_keys = function() {
+      window.open("https://github.com/ajaxorg/ace/wiki/Default-Keyboard-Shortcuts", "_blank")
     }
 
     // When the "run" button is pressed
@@ -207,21 +207,25 @@
       $('#apikey').val(settings.source.apikey)
 
       scraperwiki.exec('touch scraper; cat scraper', function(data) {
-        editor = ace.edit("editor")
-
-        editor.setReadOnly(true)
-        editor.getSession().setUseSoftTabs(true)
+        // If nothing there, set some default content to get people going
         if (data == "") {
           data = "#!/usr/bin/python\n\nimport scraperwiki\n\n"
         }
-        set_editor_mode(data)
+
+        // Create editor window, with default content
+        editor = ace.edit("editor")
+        editor.setReadOnly(true)
+        editor.getSession().setUseSoftTabs(true)
         editor.setTheme("ace/theme/monokai")
+        set_editor_mode(data)
         update_dirty(false)
+
+        // Connect to sharejs
+        connection = new sharejs.Connection('http://seagrass.goatchurch.org.uk/sharejs/channel')
 
         // XXX need a better token in here. API key?
         var docName = 'scraperwiki-' + scraperwiki.box 
-
-        sharejs.open(docName, 'text', 'http://seagrass.goatchurch.org.uk/sharejs/channel', function(error, doc) {
+        connection.open(docName, 'text', function(error, doc) {
           if (error) {
             scraperwiki.alert("Trouble setting up pair editing!", error, true)
             return
@@ -243,11 +247,14 @@
           scraperwiki.alert(errorThrown, jqXHR.responseText, "error")
       })
 
+      // Create the console output window
       output = ace.edit("output")
       output.setTheme("ace/theme/monokai")
+      // ... we use /bin/sh syntax highlighting, the only other at all
+      // credible option for such varied output is plain text, which is dull.
       output.getSession().setMode("ace/mode/sh")
-      // output.renderer.setShowGutter(false) // turn off line numbers
 
+      // Bind all the buttons to do something
       $('#docs').on('click', do_docs)
       $('#bugs').on('click', do_bugs)
       $('#keys').on('click', do_keys)
