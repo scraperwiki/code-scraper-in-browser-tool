@@ -61,7 +61,7 @@
        }
     })
 
-    // Work out language we're in
+    // Work out language we're in from the shebang line
     var set_editor_mode = function(code) {
       var first = code.split("\n")[0]
       if (first.substr(0,2) != "#!") {
