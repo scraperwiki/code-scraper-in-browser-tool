@@ -22,9 +22,13 @@
 
   <form id="buttonbar" action="#" method="POST" enctype="multipart/form-data">
     <!--<input type="button" value="Run!" id="run"> -->
-    <button class="btn btn-info" type="button" id="docs">Documentation</button>
     <button class="btn btn-primary" type="button" id="run" title="Ctrl+R">Run!</button>
-    <div class="muted" id="saved"></div>
+    <span class="muted" id="saved"></span>
+    <div id="rightbar">
+      <button class="btn btn-danger" type="button" id="bugs">Report Bug</button>
+      <button class="btn btn-inverse" type="button" id="keys">Editor Keys</button>
+      <button class="btn btn-info" type="button" id="docs">Scraping Docs</button>
+    </div>
   </form>
 
   <div id="output"></div>
@@ -95,6 +99,16 @@
     // When the "documentation" button is pressed
     var do_docs = function() {
       window.open("https://scraperwiki.com/docs/", "_blank")
+    }
+
+    // When the "bugs" button is pressed
+    var do_bugs = function() {
+      window.open("https://github.com/frabcus/code-scraper-in-browser-tool/issues", "_blank")
+    }
+
+    // When the "keys" button is pressed
+    var do_keys = function() {
+      window.open("https://github.com/ajaxorg/ace/wiki/Default-Keyboard-Shortcuts", "_blank")
     }
 
     // Show/hide things according to current state
@@ -235,6 +249,8 @@
       // output.renderer.setShowGutter(false) // turn off line numbers
 
       $('#docs').on('click', do_docs)
+      $('#bugs').on('click', do_bugs)
+      $('#keys').on('click', do_keys)
       $('#run').on('click', do_run)
       $(document).bind('keydown', 'ctrl+r', do_run)
     })

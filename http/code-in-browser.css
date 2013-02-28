@@ -18,8 +18,13 @@ html {
     margin: 2px;
 }
 
-#saved {
+#rightbar {
     float: right;
     margin-right: 2px;
+}
+
+#saved {
     margin-top: 5px; /* this is a hack to get vertical align, should be done better somehow */
+    margin-left: 5px;
+    margin-right: 5px;
 }
