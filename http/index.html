@@ -39,20 +39,15 @@
     var editorDirty
     var output
 
-    // Named function so can use clearTimeout below
-    var autosave_now = function () {
-     save_code()
-    }
-
     // Display whether we have unsaved edits
     var update_dirty = function(value) {
-       clearTimeout(autosave_now)
+       clearTimeout(save_code)
        editorDirty = value
        if (editorDirty) {
          // Wait three seconds and then save. If we get another change
          // in those three seconds, reset that timer to avoid excess saves.
          $("#saved").text("Saving...")
-         setTimeout(autosave_now, 3000)
+         setTimeout(save_code, 3000)
        } else {
          $("#saved").text("All changes saved")
        }
@@ -113,7 +108,7 @@
     // Save the code - optionally takes text of extra commands to also 
     // in the same "exec" and a callback to run when done
     var save_code = function(extraCmds, callback) {
-      clearTimeout(autosave_now) // stop any already scheduled timed saves
+      clearTimeout(save_code) // stop any already scheduled timed saves
       var code = editor.getValue()
       var cmd = "cat >scraper.new.$$ <<ENDOFSCRAPER\n" + code + "\nENDOFSCRAPER\n"
       cmd = cmd + "chmod a+x scraper.new.$$; mv scraper.new.$$ scraper; " + extraCmds
