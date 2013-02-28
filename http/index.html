@@ -31,6 +31,7 @@
     <script>
 
     var editor;
+    var editorDirty;
     var output;
 
 
@@ -152,6 +153,10 @@
         }
         set_editor_mode(data)
         editor.setTheme("ace/theme/monokai");
+        editorDirty = false;
+        editor.on('change', function() {
+         editorDirty = true;
+        });
 
         if (!document.location.hash) {
           // XXX need a better token in here. API key?
@@ -170,6 +175,7 @@
           editor.moveCursorTo(0, 0)
           editor.setReadOnly(false)
           editor.focus()
+          editorDirty = false
 
           poll_output()
         });
