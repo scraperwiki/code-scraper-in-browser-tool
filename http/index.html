@@ -200,6 +200,7 @@
       output = ace.edit("output")
       output.setTheme("ace/theme/monokai")
       output.getSession().setMode("ace/mode/sh")
+      // output.renderer.setShowGutter(false) // turn off line numbers
 
       $('#docs').on('click', do_docs)
       $('#run').on('click', do_run)
