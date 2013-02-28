@@ -93,8 +93,8 @@
       output.setValue("")
 
       // Save code
-      var cmd = "cat >scraper.new <<ENDOFSCRAPER\n" + code + "\nENDOFSCRAPER\n"
-      cmd = cmd + "chmod a+x scraper.new; mv scraper.new scraper; ./tool/enrunerate run"
+      var cmd = "cat >scraper.new.$$ <<ENDOFSCRAPER\n" + code + "\nENDOFSCRAPER\n"
+      cmd = cmd + "chmod a+x scraper.new.$$; mv scraper.new.$$ scraper; ./tool/enrunerate run"
       scraperwiki.exec(cmd, function(text) {
           console.log("enrunerate run:", text)
           // Now output any output
