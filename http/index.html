@@ -94,6 +94,20 @@
       $(".alert").remove()
     }
 
+    // Save the code - optionally text extra commands to also run in same exec,
+    // and a callback when done
+    var save_code = function(extraCmds, callback) {
+      var code = editor.getValue()
+      var cmd = "cat >scraper.new.$$ <<ENDOFSCRAPER\n" + code + "\nENDOFSCRAPER\n"
+      cmd = cmd + "chmod a+x scraper.new.$$; mv scraper.new.$$ scraper; " + extraCmds
+      scraperwiki.exec(cmd, function(text) {
+          updateDirty(false)
+          callback(text)
+      }, function(jqXHR, textStatus, errorThrown) {
+          scraperwiki.alert(errorThrown, jqXHR.responseText, "error")
+      })
+    }
+
     // When the "run" button is pressed
     var do_run = function() {
       show_status("running")
@@ -105,18 +119,11 @@
       }
       output.setValue("")
 
-      // Save code
-      var cmd = "cat >scraper.new.$$ <<ENDOFSCRAPER\n" + code + "\nENDOFSCRAPER\n"
-      cmd = cmd + "chmod a+x scraper.new.$$; mv scraper.new.$$ scraper; ./tool/enrunerate run"
-      scraperwiki.exec(cmd, function(text) {
-          updateDirty(false)
-          console.log("enrunerate run:", text)
-          // Now output any output
-          poll_output()
-      }, function(jqXHR, textStatus, errorThrown) {
-          scraperwiki.alert(errorThrown, jqXHR.responseText, "error")
+      // Save code, run it and start polling for console output
+      save_code("./tool/enrunerate run", function (text) {
+       console.log("enrunerate run:", text)
+       poll_output()
       })
-
     }
 
     // Get more output
