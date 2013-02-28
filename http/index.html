@@ -35,12 +35,21 @@
     var editorDirty
     var output
 
+    // Named function so can use clearTimeout below
+    var autosave_now = function () {
+     save_code()
+    }
+
     // Display whether we have unsaved edits
-    var updateDirty = function(value) {
+    var update_dirty = function(value) {
       if (editorDirty != value) {
         editorDirty = value
         if (editorDirty) {
+         // Wait three seconds and then save. If we get another change
+         // in those three seconds, reset that timer to avoid excess saves.
          $("#saved").text("Saving...")
+         clearTimeout(autosave_now)
+         setTimeout(autosave_now, 3000)
        } else {
          $("#saved").text("All changes saved")
        }
@@ -101,8 +110,10 @@
       var cmd = "cat >scraper.new.$$ <<ENDOFSCRAPER\n" + code + "\nENDOFSCRAPER\n"
       cmd = cmd + "chmod a+x scraper.new.$$; mv scraper.new.$$ scraper; " + extraCmds
       scraperwiki.exec(cmd, function(text) {
-          updateDirty(false)
-          callback(text)
+          update_dirty(false)
+          if (callback) {
+            callback(text)
+          }
       }, function(jqXHR, textStatus, errorThrown) {
           scraperwiki.alert(errorThrown, jqXHR.responseText, "error")
       })
@@ -173,9 +184,9 @@
         }
         set_editor_mode(data)
         editor.setTheme("ace/theme/monokai")
-        updateDirty(false)
+        update_dirty(false)
         editor.on('change', function() {
-         updateDirty(true)
+         update_dirty(true)
         })
 
         if (!document.location.hash) {
@@ -195,7 +206,7 @@
           editor.moveCursorTo(0, 0)
           editor.setReadOnly(false)
           editor.focus()
-          updateDirty(false)
+          update_dirty(false)
 
           poll_output()
         })
