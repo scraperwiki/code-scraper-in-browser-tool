@@ -69,6 +69,7 @@
           scraperwiki.alert("Specify language in the first line!", "For example, put <code>#!/usr/bin/ruby</code>, <code>#!/usr/bin/R</code> or <code>#!/usr/bin/python</code>.", false)
           return false
       }
+      // Please add more as you need them and send us a pull request!
       if (first.indexOf("python") != -1) {
         editor.getSession().setMode("ace/mode/python")
       } else if (first.indexOf("ruby") != -1) {
