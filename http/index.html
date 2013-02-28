@@ -187,6 +187,7 @@
       })
     }
     
+    // Main entry point
     $(document).ready(function() {
       settings = scraperwiki.readSettings()
       $('#apikey').val(settings.source.apikey)
@@ -197,14 +198,11 @@
         editor.setReadOnly(true)
         editor.getSession().setUseSoftTabs(true)
         if (data == "") {
-         data = "#!/usr/bin/python\n\nimport scraperwiki\n\n"
+          data = "#!/usr/bin/python\n\nimport scraperwiki\n\n"
         }
         set_editor_mode(data)
         editor.setTheme("ace/theme/monokai")
         update_dirty(false)
-        editor.on('change', function() {
-         update_dirty(true)
-        })
 
         // XXX need a better token in here. API key?
         var docName = 'scraperwiki-' + scraperwiki.box 
@@ -221,13 +219,15 @@
           editor.setReadOnly(false)
           editor.focus()
           update_dirty(false)
+          editor.on('change', function() {
+            update_dirty(true)
+          })
 
           poll_output()
         })
       }, function(jqXHR, textStatus, errorThrown) {
           scraperwiki.alert(errorThrown, jqXHR.responseText, "error")
       })
-
 
       output = ace.edit("output")
       output.setTheme("ace/theme/monokai")
