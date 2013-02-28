@@ -10,6 +10,8 @@ FLOCK="flock -n ./scraper.flock ./scraper"
 # Disable buffering of stdout/stderr
 # XXX can we do this in other languages?
 export PYTHONUNBUFFERED=1
+# Make output encode as UTF-8, as that is what the browser is expecting
+export PYTHONIOENCODING=utf_8
 
 # Check already running
 # XXX this won't work on multiple servers without affinity of some kind
