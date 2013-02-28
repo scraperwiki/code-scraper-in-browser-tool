@@ -30,9 +30,9 @@
 
     <script>
 
-    var editor;
-    var editorDirty;
-    var output;
+    var editor
+    var editorDirty
+    var output
 
 
     // Work out language we're in
@@ -44,21 +44,21 @@
           return false
       }
       if (first.indexOf("python") != -1) {
-        editor.getSession().setMode("ace/mode/python");
+        editor.getSession().setMode("ace/mode/python")
       } else if (first.indexOf("ruby") != -1) {
-        editor.getSession().setMode("ace/mode/ruby");
+        editor.getSession().setMode("ace/mode/ruby")
       } else if (first.indexOf("R") != -1) {
-        editor.getSession().setMode("ace/mode/r");
+        editor.getSession().setMode("ace/mode/r")
       } else if (first.indexOf("node") != -1) {
-        editor.getSession().setMode("ace/mode/javascript");
+        editor.getSession().setMode("ace/mode/javascript")
       } else if (first.indexOf("coffee") != -1) {
-        editor.getSession().setMode("ace/mode/coffee");
+        editor.getSession().setMode("ace/mode/coffee")
       } else if (first.indexOf("clojure") != -1) {
-        editor.getSession().setMode("ace/mode/clojure");
+        editor.getSession().setMode("ace/mode/clojure")
       } else if (first.indexOf("sh") != -1) {
-        editor.getSession().setMode("ace/mode/sh");
+        editor.getSession().setMode("ace/mode/sh")
       } else {
-        editor.getSession().setMode("ace/mode/text");
+        editor.getSession().setMode("ace/mode/text")
       }
       return true
     }
@@ -87,7 +87,7 @@
       show_status("running")
       clear_alerts()
 
-      var code = editor.getValue();
+      var code = editor.getValue()
       if (!set_editor_mode(code)) {
         return
       }
@@ -146,23 +146,23 @@
       scraperwiki.exec('touch scraper; cat scraper', function(data) {
         editor = ace.edit("editor")
 
-        editor.setReadOnly(true);
-        editor.getSession().setUseSoftTabs(true);
+        editor.setReadOnly(true)
+        editor.getSession().setUseSoftTabs(true)
         if (data == "") {
          data = "#!/usr/bin/python\n\nimport scraperwiki\n\n"
         }
         set_editor_mode(data)
-        editor.setTheme("ace/theme/monokai");
-        editorDirty = false;
+        editor.setTheme("ace/theme/monokai")
+        editorDirty = false
         editor.on('change', function() {
-         editorDirty = true;
-        });
+         editorDirty = true
+        })
 
         if (!document.location.hash) {
           // XXX need a better token in here. API key?
           document.location.hash = '#scraperwiki-' + scraperwiki.boxName; 
         }
-        var docName = "code:" + document.location.hash.slice(1);
+        var docName = "code:" + document.location.hash.slice(1)
 
         sharejs.open(docName, 'text', 'http://seagrass.goatchurch.org.uk/sharejs/channel', function(error, doc) {
           if (error) {
@@ -178,7 +178,7 @@
           editorDirty = false
 
           poll_output()
-        });
+        })
       }, function(jqXHR, textStatus, errorThrown) {
           scraperwiki.alert(errorThrown, jqXHR.responseText, "error")
       })
