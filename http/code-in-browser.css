@@ -18,3 +18,8 @@ html {
     margin: 2px;
 }
 
+#saved {
+    float: right;
+    margin-right: 2px;
+    margin-top: 5px; /* this is a hack to get vertical align, should be done better somehow */
+}
