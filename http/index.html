@@ -74,14 +74,16 @@
         editor.getSession().setMode("ace/mode/python")
       } else if (first.indexOf("ruby") != -1) {
         editor.getSession().setMode("ace/mode/ruby")
-      } else if (first.indexOf("R") != -1) {
-        editor.getSession().setMode("ace/mode/r")
+      } else if (first.indexOf("perl") != -1) {
+        editor.getSession().setMode("ace/mode/perl")
       } else if (first.indexOf("node") != -1) {
         editor.getSession().setMode("ace/mode/javascript")
       } else if (first.indexOf("coffee") != -1) {
         editor.getSession().setMode("ace/mode/coffee")
       } else if (first.indexOf("clojure") != -1) {
         editor.getSession().setMode("ace/mode/clojure")
+      } else if (first.indexOf("R") != -1) {
+        editor.getSession().setMode("ace/mode/r")
       } else if (first.indexOf("sh") != -1) {
         editor.getSession().setMode("ace/mode/sh")
       } else {
@@ -204,11 +206,8 @@
          update_dirty(true)
         })
 
-        if (!document.location.hash) {
-          // XXX need a better token in here. API key?
-          document.location.hash = '#scraperwiki-' + scraperwiki.boxName; 
-        }
-        var docName = "code:" + document.location.hash.slice(1)
+        // XXX need a better token in here. API key?
+        var docName = 'scraperwiki-' + scraperwiki.box 
 
         sharejs.open(docName, 'text', 'http://seagrass.goatchurch.org.uk/sharejs/channel', function(error, doc) {
           if (error) {
@@ -232,7 +231,7 @@
 
       output = ace.edit("output")
       output.setTheme("ace/theme/monokai")
-      output.getSession().setMode("ace/mode/sh")
+      output.getSession().setMode("ace/mode/html")
       // output.renderer.setShowGutter(false) // turn off line numbers
 
       $('#docs').on('click', do_docs)
