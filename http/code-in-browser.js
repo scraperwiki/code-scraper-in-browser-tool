@@ -2,6 +2,7 @@ var editor
 var editorDirty = false
 var output
 var status = 'nothing' // reflects what status the buttons show: 'running' or 'nothing'
+var changing ='' // for starting/stopping states
 var state // various things shared with share.js, including group consideration of the running status
 
 // Display whether we have unsaved edits
@@ -68,6 +69,7 @@ var shared_state_update = function(op) {
       poll_output()
     }
     status = new_status
+    changing = ""
   }
   update_display_from_status(new_status)
 }
@@ -75,10 +77,15 @@ var shared_state_update = function(op) {
 // Show status in buttons - we have this as we can call it directly
 // to make the run button seem more responsive
 var update_display_from_status = function(use_status) {
-  if (use_status == "running") {
-    $("#run").text("Running...").removeClass("btn-primary").addClass("btn-warning")
+  $("#run").removeClass("btn-primary").removeClass("btn-danger").removeClass("btn-warning").removeClass("btn-success")
+  if (changing == "starting") {
+    $("#run").text("Starting...").addClass("btn-warning")
+  } else if (changing == "stopping") {
+    $("#run").text("Stopping...").addClass("btn-danger")
+  } else if (use_status == "running") {
+    $("#run").text("Running...").addClass("btn-success")
   } else if (use_status == "nothing") {
-    $("#run").text("Run!").removeClass("btn-warning").addClass("btn-primary")
+    $("#run").text("Run!").addClass("btn-primary")
   }
 }
 
@@ -180,9 +187,24 @@ var do_run = function() {
     return
   }
 
+  // if it is already running, stop instead
+  if (status == "running") {
+    // make button show what we're doing
+    changing = "stopping"
+    update_display_from_status(status)
+
+    scraperwiki.exec("./tool/enrunerate stop", function(text) {
+      console.log("enrunerate stop:", text)
+      // And tell all clients that we're now not running code (if we're not!)
+      set_status(text)
+    })
+    return
+  }
+
   // to make button feel responsibe, temporarily show the wrong status
   // (until next operation makes it right)
-  update_display_from_status("running")
+  changing = "starting"
+  update_display_from_status(status)
   output.setValue("")
 
   // Save code, run it
