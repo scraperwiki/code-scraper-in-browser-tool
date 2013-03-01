@@ -56,13 +56,24 @@ var set_editor_mode = function(code) {
   return true
 }
 
-// Show/hide things according to current state
-var show_status = function(status) {
+// Got a new state from other clients over ShareJS
+var shared_state_update = function(op) {
+  console.log("shared_state_update", state.snapshot)
+  console.log("status is now", state.snapshot.status)
+
+  // Respond to the change
+  var status = state.snapshot.status
   if (status == "running") {
     $("#run").text("Running...").removeClass("btn-primary").addClass("btn-warning")
   } else {
     $("#run").text("Run!").removeClass("btn-warning").addClass("btn-primary")
   }
+}
+
+// Show/hide things according to current state
+var show_status = function(status) {
+  // Tell other ShareJS clients the status has changed
+  state.submitOp( {p:['status'],od:state.status,oi:status})
 }
 
 // Clear any errors
@@ -206,7 +217,7 @@ $(document).ready(function() {
     share_state: ['sharejs_connection', function(callback, results) {
       console.log("sharing state...")
       // XXX need a better token in here. API key?
-      var docName = 'scraperwiki-' + scraperwiki.box + '-state'
+      var docName = 'scraperwiki-' + scraperwiki.box + '-statex'
       results.sharejs_connection.open(docName, 'json', function(error, doc) {
         if (error) {
           scraperwiki.alert("Trouble setting up pair state!", error, true)
@@ -216,14 +227,21 @@ $(document).ready(function() {
       })
     }]
    }, function(err, results) {
-      console.log("all done", err, results)
       if (err) {
         return
       }
-
       var data = results.load_code
       var doc = results.share_doc
       state = results.share_state
+
+      // Start to share status
+      if (state.created) {
+        alert('created')
+        state.submitOp([{p:[],od:null,oi:{status:'nothing'}}])
+      }
+      state.on('change', function (op) {
+        shared_state_update(op)
+      })
 
       // Create editor window
       editor = ace.edit("editor")
