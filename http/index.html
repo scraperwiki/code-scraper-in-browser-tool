@@ -14,6 +14,7 @@
     <script src="ace/ace.js" type="text/javascript" charset="utf-8"></script>
     <script src="sharejs/channel/bcsocket.js"></script>
     <script src="sharejs/share/share.js"></script>
+    <script src="sharejs/share/json.js"></script>
     <script src="sharejs/share/ace.js"></script>
     <script src="async.js" type="text/javascript"></script>
   </head>
@@ -39,6 +40,7 @@
     var editor
     var editorDirty = false
     var output
+    var state // shared with share.js
 
     // Display whether we have unsaved edits
     var update_dirty = function(value) {
@@ -236,7 +238,31 @@
             }
             callback(null, doc)
           })
-         }]
+        }],
+        share_doc: ['sharejs_connection', function(callback, results) {
+          console.log("sharing doc...")
+          // XXX need a better token in here. API key?
+          var docName = 'scraperwiki-' + scraperwiki.box + '-doc'
+          results.sharejs_connection.open(docName, 'text', function(error, doc) {
+            if (error) {
+              scraperwiki.alert("Trouble setting up pair editing!", error, true)
+              callback(true, null)
+            }
+            callback(null, doc)
+          })
+        }],
+        share_state: ['sharejs_connection', function(callback, results) {
+          console.log("sharing state...")
+          // XXX need a better token in here. API key?
+          var docName = 'scraperwiki-' + scraperwiki.box + '-state'
+          results.sharejs_connection.open(docName, 'json', function(error, doc) {
+            if (error) {
+              scraperwiki.alert("Trouble setting up pair state!", error, true)
+              callback(true, null)
+            }
+            callback(null, doc)
+          })
+        }]
        }, function(err, results) {
           console.log("all done", err, results)
           if (err) {
@@ -245,6 +271,7 @@
 
           var data = results.load_code
           var doc = results.share_doc
+          state = results.share_doc
 
           // Create editor window
           editor = ace.edit("editor")
