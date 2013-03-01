@@ -2,6 +2,7 @@
 
 PARAM=$1
 FLOCK="flock -n ./running.flock ./code/scraper"
+REGEXP="./code/scraper"
 
 # Parameters:
 # "run" to actually launch scraper if not already
@@ -16,10 +17,37 @@ export PYTHONIOENCODING=utf_8
 # Check already running
 # XXX this won't work on multiple servers without affinity of some kind
 # perhaps instead can rely on the flock?
-if pgrep -f "^$FLOCK$" >/dev/null
+if pgrep -f "$REGEXP" >/dev/null
 then
-    echo -n "running"
-    exit 0
+    if [ "$PARAM" == "stop" ]
+    then
+        # Try and kill it kindly, so SQLite will close up properly
+        pkill -f "$REGEXP"
+        if pgrep -f "$REGEXP"
+        then
+            sleep 1
+            pkill -f "$REGEXP"
+            if pgrep -f "$REGEXP"
+            then
+                # Wait a while to give it time
+                sleep 10
+                if pgrep -f "$REGEXP"
+                then
+                    # Give up
+                    pkill -9 -f "$REGEXP"
+                    if pgrep -f "$REGEXP"
+                    then
+                        echo -n "failed to kill"
+                    fi
+                fi
+            fi
+        fi
+        echo -n "nothing"
+        exit 0
+    else
+        echo -n "running"
+        exit 0
+    fi
 fi
 
 # Run in background, redirecting to logfile
