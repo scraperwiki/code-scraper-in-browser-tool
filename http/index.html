@@ -203,9 +203,9 @@
       settings = scraperwiki.readSettings()
       $('#apikey').val(settings.source.apikey)
 
-      async.parallel([
+      async.parallel({
         // Load code from file
-        function(callback) {
+        load_code: function(callback) {
           console.log("loading...")
           scraperwiki.exec('touch scraper; cat scraper', function(data) {
             // If nothing there, set some default content to get people going
@@ -219,7 +219,7 @@
           })
         },
         // Connect to sharejs
-        function(callback) {
+        share_doc: function(callback) {
           console.log("sharing...")
           connection = new sharejs.Connection('http://seagrass.goatchurch.org.uk/sharejs/channel')
 
@@ -233,14 +233,14 @@
             callback(null, doc)
           })
          }
-       ], function(err, results) {
+       }, function(err, results) {
           console.log("both done", err, results)
           if (err) {
             return
           }
 
-          var data = results[0]
-          var doc = results[1]
+          var data = results.load_code
+          var doc = results.share_doc
 
           // Create editor window
           editor = ace.edit("editor")
