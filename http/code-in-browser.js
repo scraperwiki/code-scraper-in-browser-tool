@@ -175,7 +175,7 @@ $(document).ready(function() {
       console.log("loading...")
       scraperwiki.exec('touch scraper; cat scraper', function(data) {
         // If nothing there, set some default content to get people going
-        if (data == "") {
+        if (data.match(/^\s*$/)) {
           data = "#!/usr/bin/python\n\nimport scraperwiki\n\n"
         }
         callback(null, data)
@@ -191,18 +191,6 @@ $(document).ready(function() {
       callback(null, connection)
     },
     // Wire up shared document on the connection
-    share_doc: ['sharejs_connection', function(callback, results) {
-      console.log("sharing doc...")
-      // XXX need a better token in here. API key?
-      var docName = 'scraperwiki-' + scraperwiki.box 
-      results.sharejs_connection.open(docName, 'text', function(error, doc) {
-        if (error) {
-          scraperwiki.alert("Trouble setting up pair editing!", error, true)
-          callback(true, null)
-        }
-        callback(null, doc)
-      })
-    }],
     share_doc: ['sharejs_connection', function(callback, results) {
       console.log("sharing doc...")
       // XXX need a better token in here. API key?
@@ -235,7 +223,7 @@ $(document).ready(function() {
 
       var data = results.load_code
       var doc = results.share_doc
-      state = results.share_doc
+      state = results.share_state
 
       // Create editor window
       editor = ace.edit("editor")
@@ -243,12 +231,7 @@ $(document).ready(function() {
       editor.setTheme("ace/theme/monokai")
       set_editor_mode(data)
       doc.attach_ace(editor)
-      if (doc.created) {
-        // only use the loaded data if we've made a new sharejs instance
-        // this effectively means the master copy is in sharejs...
-        // and the filesystem is just for persistence if it goes
-        editor.setValue(data)
-      }
+      editor.setValue(data) // XXX this overrides what is in filesystem on top of what is in sharej
       editor.moveCursorTo(0, 0)
       editor.focus()
 
