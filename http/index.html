@@ -203,7 +203,7 @@
       settings = scraperwiki.readSettings()
       $('#apikey').val(settings.source.apikey)
 
-      async.parallel({
+      async.auto({
         // Load code from file
         load_code: function(callback) {
           console.log("loading...")
@@ -219,22 +219,26 @@
           })
         },
         // Connect to sharejs
-        share_doc: function(callback) {
-          console.log("sharing...")
+        sharejs_connection: function(callback) {
+          console.log("connecting...")
           connection = new sharejs.Connection('http://seagrass.goatchurch.org.uk/sharejs/channel')
-
+          callback(null, connection)
+        },
+        // Wire up shared document on the connection
+        share_doc: ['sharejs_connection', function(callback, results) {
+          console.log("sharing doc...")
           // XXX need a better token in here. API key?
           var docName = 'scraperwiki-' + scraperwiki.box 
-          connection.open(docName, 'text', function(error, doc) {
+          results.sharejs_connection.open(docName, 'text', function(error, doc) {
             if (error) {
               scraperwiki.alert("Trouble setting up pair editing!", error, true)
               callback(true, null)
             }
             callback(null, doc)
           })
-         }
+         }]
        }, function(err, results) {
-          console.log("both done", err, results)
+          console.log("all done", err, results)
           if (err) {
             return
           }
