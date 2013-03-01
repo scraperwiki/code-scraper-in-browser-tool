@@ -1,7 +1,8 @@
 var editor
 var editorDirty = false
 var output
-var state // shared with share.js
+var status = 'nothing' // reflects what status the buttons show: 'running' or 'nothing'
+var state // various things shared with share.js, including group consideration of the running status
 
 // Display whether we have unsaved edits
 var update_dirty = function(value) {
@@ -29,7 +30,6 @@ $(window).on('beforeunload', function() {
 var set_editor_mode = function(code) {
   var first = code.split("\n")[0]
   if (first.substr(0,2) != "#!") {
-    show_status()
     scraperwiki.alert("Specify language in the first line!", "For example, put <code>#!/usr/bin/ruby</code>, <code>#!/usr/bin/R</code> or <code>#!/usr/bin/python</code>.", false)
     return false
   }
@@ -56,28 +56,62 @@ var set_editor_mode = function(code) {
   return true
 }
 
-// Got a new state from other clients over ShareJS
+// Got a new state over ShareJS (from ourselves or remote clients)
 var shared_state_update = function(op) {
   console.log("shared_state_update", state.snapshot)
-  console.log("status is now", state.snapshot.status)
 
-  // Respond to the change
-  var status = state.snapshot.status
-  if (status == "running") {
-    $("#run").text("Running...").removeClass("btn-primary").addClass("btn-warning")
-  } else {
-    $("#run").text("Run!").removeClass("btn-warning").addClass("btn-primary")
+  // Respond to the status change
+  var new_status = state.snapshot.status
+  if (new_status != status) {
+    console.log("status change", status, "===>", new_status)
+    if (new_status == "running") {
+      $("#run").text("Running...").removeClass("btn-primary").addClass("btn-warning")
+      poll_output()
+    } else if (new_status == "nothing") {
+      $("#run").text("Run!").removeClass("btn-warning").addClass("btn-primary")
+    } else {
+      scraperwiki.alert("Unknown new status!", new_status, true)
+    }
+    status = new_status
   }
 }
 
 // Show/hide things according to current state
-var show_status = function(status) {
+var set_status = function(new_status) {
   // Tell other ShareJS clients the status has changed
-  state.submitOp( {p:['status'],od:state.status,oi:status})
+  state.submitOp( {p:['status'],od:status,oi:new_status}) // XXX state.status for od?
 }
 
+// Console get more output
+var poll_output = function() {
+  scraperwiki.exec("./tool/enrunerate", function(text) {
+    console.log("enrunerate:", text, "len:", text.length)
+    set_status(text)
+
+    var again = false
+    if (text == "running") {
+      again = true
+    }
+    scraperwiki.exec("cat logs/out", function(text) {
+      // XXX detect no file a better way
+      if (text != "cat: logs/out: No such file or directory\n") {
+        output.setValue(text)
+      }
+      output.clearSelection()
+      if (again) {
+        setTimeout(poll_output, 10)
+      }
+    }, function(jqXHR, textStatus, errorThrown) {
+        scraperwiki.alert(errorThrown, jqXHR.responseText, "error")
+    })
+  }, function(jqXHR, textStatus, errorThrown) {
+      scraperwiki.alert(errorThrown, jqXHR.responseText, "error")
+  })
+}
+
+
 // Clear any errors
-var clear_alerts = function(status) {
+var clear_alerts = function() {
   $(".alert").remove()
 }
 
@@ -126,52 +160,21 @@ var do_keys = function() {
 
 // When the "run" button is pressed
 var do_run = function() {
-  show_status("running")
+  // set_status("running") // XXX don't set status, just set the button
   clear_alerts()
 
   var code = editor.getValue()
   if (!set_editor_mode(code)) {
+    // set_status("nothing") // XXX just clear the button state we temporarily set
     return
   }
   output.setValue("")
 
-  // Save code, run it and start polling for console output
+  // Save code, run it
   save_code("./tool/enrunerate run", function (text) {
-   console.log("enrunerate run:", text)
-   poll_output()
-  })
-}
-
-// Get more output
-var poll_output = function() {
-  scraperwiki.exec("./tool/enrunerate", function(text) {
-    console.log("enrunerate:", text)
-
-    var again = true
-    if (text == "running") {
-      show_status("running")
-    } else if (text == "nothing") {
-      show_status("nothing")
-      again = false
-    } else {
-      scraperwiki.alert("Unknown enrunerate error!", text, true)
-      return
-    }
-
-    scraperwiki.exec("cat logs/out", function(text) {
-      // XXX detect no file a better way
-      if (text != "cat: logs/out: No such file or directory\n") {
-        output.setValue(text)
-      }
-      output.clearSelection()
-      if (again) {
-       setTimeout(poll_output, 1)
-      }
-    }, function(jqXHR, textStatus, errorThrown) {
-        scraperwiki.alert(errorThrown, jqXHR.responseText, "error")
-    })
-  }, function(jqXHR, textStatus, errorThrown) {
-      scraperwiki.alert(errorThrown, jqXHR.responseText, "error")
+    console.log("enrunerate run:", text)
+    // And tell all clients that we're now running code (if we are!)
+    set_status(text)
   })
 }
 
@@ -205,7 +208,7 @@ $(document).ready(function() {
     share_doc: ['sharejs_connection', function(callback, results) {
       console.log("sharing doc...")
       // XXX need a better token in here. API key?
-      var docName = 'scraperwiki-' + scraperwiki.box + '-doc'
+      var docName = 'scraperwiki-' + scraperwiki.box + '-doc001'
       results.sharejs_connection.open(docName, 'text', function(error, doc) {
         if (error) {
           scraperwiki.alert("Trouble setting up pair editing!", error, true)
@@ -217,7 +220,7 @@ $(document).ready(function() {
     share_state: ['sharejs_connection', function(callback, results) {
       console.log("sharing state...")
       // XXX need a better token in here. API key?
-      var docName = 'scraperwiki-' + scraperwiki.box + '-statex'
+      var docName = 'scraperwiki-' + scraperwiki.box + '-state001'
       results.sharejs_connection.open(docName, 'json', function(error, doc) {
         if (error) {
           scraperwiki.alert("Trouble setting up pair state!", error, true)
@@ -236,7 +239,7 @@ $(document).ready(function() {
 
       // Start to share status
       if (state.created) {
-        alert('created')
+        console.log("first time this state connection has been used, initialising")
         state.submitOp([{p:[],od:null,oi:{status:'nothing'}}])
       }
       state.on('change', function (op) {
@@ -258,7 +261,7 @@ $(document).ready(function() {
         update_dirty(true)
       })
 
-      poll_output()
+      //poll_output()
    });
 
   // Create the console output window
