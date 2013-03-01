@@ -65,19 +65,30 @@ var shared_state_update = function(op) {
   if (new_status != status) {
     console.log("status change", status, "===>", new_status)
     if (new_status == "running") {
-      $("#run").text("Running...").removeClass("btn-primary").addClass("btn-warning")
       poll_output()
-    } else if (new_status == "nothing") {
-      $("#run").text("Run!").removeClass("btn-warning").addClass("btn-primary")
-    } else {
-      scraperwiki.alert("Unknown new status!", new_status, true)
     }
     status = new_status
+  }
+  update_display_from_status(new_status)
+}
+
+// Show status in buttons - we have this as we can call it directly
+// to make the run button seem more responsive
+var update_display_from_status = function(use_status) {
+  if (use_status == "running") {
+    $("#run").text("Running...").removeClass("btn-primary").addClass("btn-warning")
+  } else if (use_status == "nothing") {
+    $("#run").text("Run!").removeClass("btn-warning").addClass("btn-primary")
   }
 }
 
 // Show/hide things according to current state
 var set_status = function(new_status) {
+  if (new_status != "running" && new_status != "nothing") {
+    scraperwiki.alert("Unknown new status!", new_status, true)
+    return
+  }
+
   // Tell other ShareJS clients the status has changed
   state.submitOp( {p:['status'],od:status,oi:new_status}) // XXX state.status for od?
 }
@@ -88,8 +99,10 @@ var poll_output = function() {
     console.log("enrunerate:", text, "len:", text.length)
     set_status(text)
 
+    // we poll one last time either way to be sure we get end of output...
     var again = false
     if (text == "running") {
+      // ... but if script is still "running" we'll trigger the timer to do it again
       again = true
     }
     scraperwiki.exec("cat logs/out", function(text) {
@@ -160,14 +173,16 @@ var do_keys = function() {
 
 // When the "run" button is pressed
 var do_run = function() {
-  // set_status("running") // XXX don't set status, just set the button
+  // force a check that we have a shebang (#!) line
   clear_alerts()
-
   var code = editor.getValue()
   if (!set_editor_mode(code)) {
-    // set_status("nothing") // XXX just clear the button state we temporarily set
     return
   }
+
+  // to make button feel responsibe, temporarily show the wrong status
+  // (until next operation makes it right)
+  update_display_from_status("running")
   output.setValue("")
 
   // Save code, run it
@@ -261,7 +276,7 @@ $(document).ready(function() {
         update_dirty(true)
       })
 
-      //poll_output()
+      poll_output()
    });
 
   // Create the console output window
