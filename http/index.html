@@ -15,6 +15,7 @@
     <script src="sharejs/channel/bcsocket.js"></script>
     <script src="sharejs/share/share.js"></script>
     <script src="sharejs/share/ace.js"></script>
+    <script src="async.js" type="text/javascript"></script>
   </head>
   <body>
 
@@ -36,7 +37,7 @@
     <script>
 
     var editor
-    var editorDirty
+    var editorDirty = false
     var output
 
     // Display whether we have unsaved edits
@@ -202,30 +203,52 @@
       settings = scraperwiki.readSettings()
       $('#apikey').val(settings.source.apikey)
 
-      scraperwiki.exec('touch scraper; cat scraper', function(data) {
-        // If nothing there, set some default content to get people going
-        if (data == "") {
-          data = "#!/usr/bin/python\n\nimport scraperwiki\n\n"
-        }
-
-        // Create editor window, with default content
-        editor = ace.edit("editor")
-        editor.setReadOnly(true)
-        editor.getSession().setUseSoftTabs(true)
-        editor.setTheme("ace/theme/monokai")
-        set_editor_mode(data)
-        update_dirty(false)
-
+      async.parallel([
+        // Load code from file
+        function(callback) {
+          console.log("loading...")
+          scraperwiki.exec('touch scraper; cat scraper', function(data) {
+            // If nothing there, set some default content to get people going
+            if (data == "") {
+              data = "#!/usr/bin/python\n\nimport scraperwiki\n\n"
+            }
+            callback(null, data)
+          }, function(jqXHR, textStatus, errorThrown) {
+             scraperwiki.alert(errorThrown, jqXHR.responseText, "error")
+             callback(true, null)
+          })
+        },
         // Connect to sharejs
-        connection = new sharejs.Connection('http://seagrass.goatchurch.org.uk/sharejs/channel')
+        function(callback) {
+          console.log("sharing...")
+          connection = new sharejs.Connection('http://seagrass.goatchurch.org.uk/sharejs/channel')
 
-        // XXX need a better token in here. API key?
-        var docName = 'scraperwiki-' + scraperwiki.box 
-        connection.open(docName, 'text', function(error, doc) {
-          if (error) {
-            scraperwiki.alert("Trouble setting up pair editing!", error, true)
+          // XXX need a better token in here. API key?
+          var docName = 'scraperwiki-' + scraperwiki.box 
+          connection.open(docName, 'text', function(error, doc) {
+            if (error) {
+              scraperwiki.alert("Trouble setting up pair editing!", error, true)
+              callback(true, null)
+            }
+            callback(null, doc)
+          })
+         }
+       ], function(err, results) {
+          console.log("both done", err, results)
+          if (err) {
             return
           }
+
+          var data = results[0]
+          var doc = results[1]
+
+          // Create editor window
+          editor = ace.edit("editor")
+          editor.setReadOnly(true)
+          editor.getSession().setUseSoftTabs(true)
+          editor.setTheme("ace/theme/monokai")
+          set_editor_mode(data)
+          update_dirty(false) // XXX think this line can go
 
           doc.attach_ace(editor)
           editor.setValue(data)
@@ -238,10 +261,7 @@
           })
 
           poll_output()
-        })
-      }, function(jqXHR, textStatus, errorThrown) {
-          scraperwiki.alert(errorThrown, jqXHR.responseText, "error")
-      })
+       });
 
       // Create the console output window
       output = ace.edit("output")
