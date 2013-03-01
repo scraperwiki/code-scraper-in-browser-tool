@@ -75,7 +75,10 @@ var clear_alerts = function(status) {
 var save_code = function(extraCmds, callback) {
   clearTimeout(save_code) // stop any already scheduled timed saves
   var code = editor.getValue()
-  var cmd = "cat >scraper.new.$$ <<ENDOFSCRAPER\n" + code + "\nENDOFSCRAPER\n"
+  if (code.length == 0 || code.charAt(code.length - 1) != "\n") {
+    code += "\n" // we need a separator \n at the end of the file for the ENDOFSCRAPER heredoc below
+  }
+  var cmd = "cat >scraper.new.$$ <<ENDOFSCRAPER\n" + code + "ENDOFSCRAPER\n"
   cmd = cmd + "chmod a+x scraper.new.$$; mv scraper.new.$$ scraper; " + extraCmds
   scraperwiki.exec(cmd, function(text) {
     // Check actual content against saved - in case there was a change while we executed
@@ -236,17 +239,14 @@ $(document).ready(function() {
 
       // Create editor window
       editor = ace.edit("editor")
-      editor.setReadOnly(true)
       editor.getSession().setUseSoftTabs(true)
       editor.setTheme("ace/theme/monokai")
       set_editor_mode(data)
-      update_dirty(false) // XXX think this line can go
-
       doc.attach_ace(editor)
       editor.setValue(data)
       editor.moveCursorTo(0, 0)
-      editor.setReadOnly(false)
       editor.focus()
+
       update_dirty(false)
       editor.on('change', function() {
         update_dirty(true)
