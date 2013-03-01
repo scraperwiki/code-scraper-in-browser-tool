@@ -136,8 +136,8 @@ var save_code = function(extraCmds, callback) {
   if (code.length == 0 || code.charAt(code.length - 1) != "\n") {
     code += "\n" // we need a separator \n at the end of the file for the ENDOFSCRAPER heredoc below
   }
-  var cmd = "cat >scraper.new.$$ <<ENDOFSCRAPER\n" + code + "ENDOFSCRAPER\n"
-  cmd = cmd + "chmod a+x scraper.new.$$; mv scraper.new.$$ scraper; " + extraCmds
+  var cmd = "cat >code/scraper.new.$$ <<ENDOFSCRAPER\n" + code + "ENDOFSCRAPER\n"
+  cmd = cmd + "chmod a+x code/scraper.new.$$; mv code/scraper.new.$$ code/scraper; " + extraCmds
   scraperwiki.exec(cmd, function(text) {
     // Check actual content against saved - in case there was a change while we executed
     if (editor.getValue() == code) {
@@ -202,7 +202,7 @@ $(document).ready(function() {
     // Load code from file
     load_code: function(callback) {
       console.log("loading...")
-      scraperwiki.exec('touch scraper; cat scraper', function(data) {
+      scraperwiki.exec('mkdir -p code; touch code/scraper; cat code/scraper', function(data) {
         // If nothing there, set some default content to get people going
         if (data.match(/^\s*$/)) {
           data = "#!/usr/bin/python\n\nimport scraperwiki\n\n"
