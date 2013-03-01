@@ -243,7 +243,12 @@ $(document).ready(function() {
       editor.setTheme("ace/theme/monokai")
       set_editor_mode(data)
       doc.attach_ace(editor)
-      editor.setValue(data)
+      if (doc.created) {
+        // only use the loaded data if we've made a new sharejs instance
+        // this effectively means the master copy is in sharejs...
+        // and the filesystem is just for persistence if it goes
+        editor.setValue(data)
+      }
       editor.moveCursorTo(0, 0)
       editor.focus()
 
