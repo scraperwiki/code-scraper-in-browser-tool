@@ -5,33 +5,33 @@ var state // shared with share.js
 
 // Display whether we have unsaved edits
 var update_dirty = function(value) {
-   clearTimeout(save_code)
-   editorDirty = value
-   if (editorDirty) {
-     // Wait three seconds and then save. If we get another change
-     // in those three seconds, reset that timer to avoid excess saves.
-     $("#saved").text("Saving...")
-     setTimeout(save_code, 3000)
-   } else {
-     $("#saved").text("All changes saved")
-   }
+  clearTimeout(save_code)
+  editorDirty = value
+  if (editorDirty) {
+    // Wait three seconds and then save. If we get another change
+    // in those three seconds, reset that timer to avoid excess saves.
+    $("#saved").text("Saving...")
+    setTimeout(save_code, 3000)
+  } else {
+    $("#saved").text("All changes saved")
+  }
 }
 
 // Prevent navigation away if not saved
 // XXX this doesn't seem to work for close events in chrome in the frame
 $(window).on('beforeunload', function() {
-   if (editorDirty) {
-     return "You've made changes that haven't been saved yet."
-   }
+  if (editorDirty) {
+    return "You've made changes that haven't been saved yet."
+  }
 })
 
 // Work out language we're in from the shebang line
 var set_editor_mode = function(code) {
   var first = code.split("\n")[0]
   if (first.substr(0,2) != "#!") {
-      show_status()
-      scraperwiki.alert("Specify language in the first line!", "For example, put <code>#!/usr/bin/ruby</code>, <code>#!/usr/bin/R</code> or <code>#!/usr/bin/python</code>.", false)
-      return false
+    show_status()
+    scraperwiki.alert("Specify language in the first line!", "For example, put <code>#!/usr/bin/ruby</code>, <code>#!/usr/bin/R</code> or <code>#!/usr/bin/python</code>.", false)
+    return false
   }
   // Please add more as you need them and send us a pull request!
   if (first.indexOf("python") != -1) {
@@ -78,20 +78,20 @@ var save_code = function(extraCmds, callback) {
   var cmd = "cat >scraper.new.$$ <<ENDOFSCRAPER\n" + code + "\nENDOFSCRAPER\n"
   cmd = cmd + "chmod a+x scraper.new.$$; mv scraper.new.$$ scraper; " + extraCmds
   scraperwiki.exec(cmd, function(text) {
-      // Check actual content against saved - in case there was a change while we executed
-      if (editor.getValue() == code) {
-        console.log("Saved fine without intereference")
-        update_dirty(false)
-      } else {
-        console.log("Ooops, it got dirty while saving")
-        update_dirty(true)
-      }
+    // Check actual content against saved - in case there was a change while we executed
+    if (editor.getValue() == code) {
+      console.log("Saved fine without intereference")
+      update_dirty(false)
+    } else {
+      console.log("Ooops, it got dirty while saving")
+      update_dirty(true)
+    }
 
-      if (callback) {
-        callback(text)
-      }
+    if (callback) {
+      callback(text)
+    }
   }, function(jqXHR, textStatus, errorThrown) {
-      scraperwiki.alert(errorThrown, jqXHR.responseText, "error")
+    scraperwiki.alert(errorThrown, jqXHR.responseText, "error")
   })
 }
 
