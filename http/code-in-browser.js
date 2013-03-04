@@ -161,6 +161,7 @@ var save_code = function(extraCmds, callback) {
       callback(text)
     }
   }, function(jqXHR, textStatus, errorThrown) {
+    console.log("save_code error:", errorThrown, jqXHR, textStatus)
     scraperwiki.alert(errorThrown, jqXHR.responseText, "error")
   })
 }
