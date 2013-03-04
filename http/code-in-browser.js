@@ -47,6 +47,8 @@ var set_editor_mode = function(code) {
     editor.getSession().setMode("ace/mode/coffee")
   } else if (first.indexOf("clojure") != -1) {
     editor.getSession().setMode("ace/mode/clojure")
+  } else if (first.indexOf("tcc") != -1) {
+    editor.getSession().setMode("ace/mode/c_cpp")
   } else if (first.indexOf("R") != -1) {
     editor.getSession().setMode("ace/mode/r")
   } else if (first.indexOf("sh") != -1) {
