@@ -5,6 +5,18 @@ var status = 'nothing' // reflects what status the buttons show: 'running' or 'n
 var changing ='' // for starting/stopping states
 var state // various things shared with share.js, including group consideration of the running status
 
+// Handle error
+var handle_error = function(jqXHR, textStatus, errorThrown) {
+    console.log("got an error:", errorThrown, jqXHR, textStatus)
+    // Handle special case of no network error
+    // http://stackoverflow.com/questions/10026204/dialog-box-if-there-is-no-internet-connection-using-jquery-or-ajax
+    if (jqXHR.status == 0) { 
+      scraperwiki.alert("No connection to Internet!", jqXHR.responseText, "error")
+    } else {
+      scraperwiki.alert(errorThrown, jqXHR.responseText, "error")
+    }
+}
+
 // Display whether we have unsaved edits
 var update_dirty = function(value) {
   clearTimeout(save_code)
@@ -123,12 +135,8 @@ var poll_output = function() {
       if (again) {
         setTimeout(poll_output, 10)
       }
-    }, function(jqXHR, textStatus, errorThrown) {
-        scraperwiki.alert(errorThrown, jqXHR.responseText, "error")
-    })
-  }, function(jqXHR, textStatus, errorThrown) {
-      scraperwiki.alert(errorThrown, jqXHR.responseText, "error")
-  })
+    }, handle_error)
+  }, handle_error)
 }
 
 
@@ -160,10 +168,7 @@ var save_code = function(extraCmds, callback) {
     if (callback) {
       callback(text)
     }
-  }, function(jqXHR, textStatus, errorThrown) {
-    console.log("save_code error:", errorThrown, jqXHR, textStatus)
-    scraperwiki.alert(errorThrown, jqXHR.responseText, "error")
-  })
+  }, handle_error)
 }
 
 // When the "documentation" button is pressed
@@ -233,10 +238,7 @@ $(document).ready(function() {
           data = "#!/usr/bin/python\n\nimport scraperwiki\n\n"
         }
         callback(null, data)
-      }, function(jqXHR, textStatus, errorThrown) {
-         scraperwiki.alert(errorThrown, jqXHR.responseText, "error")
-         callback(true, null)
-      })
+      }, handle_error)
     },
     // Connect to sharejs
     sharejs_connection: function(callback) {
