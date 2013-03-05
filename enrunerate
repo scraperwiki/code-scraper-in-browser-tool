@@ -23,19 +23,19 @@ then
     then
         # Try and kill it kindly, so SQLite will close up properly
         pkill -f "$REGEXP"
-        if pgrep -f "$REGEXP"
+        if pgrep -f "$REGEXP" >/dev/null
         then
             sleep 1
             pkill -f "$REGEXP"
-            if pgrep -f "$REGEXP"
+            if pgrep -f "$REGEXP" >/dev/null
             then
                 # Wait a while to give it time
                 sleep 10
-                if pgrep -f "$REGEXP"
+                if pgrep -f "$REGEXP" >/dev/null
                 then
                     # Give up
                     pkill -9 -f "$REGEXP"
-                    if pgrep -f "$REGEXP"
+                    if pgrep -f "$REGEXP" >/dev/null
                     then
                         echo -n "failed to kill"
                     fi
