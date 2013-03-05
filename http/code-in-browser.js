@@ -285,7 +285,7 @@ $(document).ready(function() {
     share_doc: ['sharejs_connection', function(callback, results) {
       console.log("sharing doc...")
       // XXX need a better token in here. API key?
-      var docName = 'scraperwiki-' + scraperwiki.box + '-doc002'
+      var docName = 'scraperwiki-' + scraperwiki.box + '-doc003'
       results.sharejs_connection.open(docName, 'text', function(error, doc) {
         if (error) {
           scraperwiki.alert("Trouble setting up pair editing!", error, true)
@@ -297,7 +297,7 @@ $(document).ready(function() {
     share_state: ['sharejs_connection', function(callback, results) {
       console.log("sharing state...")
       // XXX need a better token in here. API key?
-      var docName = 'scraperwiki-' + scraperwiki.box + '-state002'
+      var docName = 'scraperwiki-' + scraperwiki.box + '-state003'
       results.sharejs_connection.open(docName, 'json', function(error, doc) {
         if (error) {
           scraperwiki.alert("Trouble setting up pair state!", error, true)
@@ -324,9 +324,8 @@ $(document).ready(function() {
       var doc = results.share_doc
 
       // Connect editor window to the doc
-      set_editor_mode(data)
       doc.attach_ace(editor)
-
+      set_editor_mode(data)
       editor.setValue(data) // XXX this overrides what is in filesystem on top of what is in sharej
       editor.moveCursorTo(0, 0)
       editor.focus()
