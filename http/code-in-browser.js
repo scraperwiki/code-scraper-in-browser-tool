@@ -17,7 +17,7 @@ var handle_exec_error = function(jqXHR, textStatus, errorThrown) {
         scraperwiki.alert("No connection to Internet!", "", "error")
       } , 500)
     } else {
-      scraperwiki.alert(errorThrown, $(jqXHR.responseText).text, "error")
+      scraperwiki.alert(errorThrown, $(jqXHR.responseText).text(), "error")
     }
 }
 
