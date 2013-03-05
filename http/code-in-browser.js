@@ -244,7 +244,13 @@ $(document).ready(function() {
     // Load code from file
     load_code: function(callback) {
       console.log("loading...")
-      scraperwiki.exec('mkdir -p code; touch code/scraper; cat code/scraper', function(data) {
+      scraperwiki.exec('mkdir -p code && touch code/scraper && cat code/scraper && echo -n swinternalGOTCODEOFSCRAPER', function(data) {
+        if (data.indexOf("swinternalGOTCODEOFSCRAPER") == -1) {
+          scraperwiki.alert("Trouble loading code!", data, true)
+          return
+        }
+        data = data.replace("swinternalGOTCODEOFSCRAPER", "")
+
         // If nothing there, set some default content to get people going
         if (data.match(/^\s*$/)) {
           data = "#!/usr/bin/python\n\nimport scraperwiki\n\n"
