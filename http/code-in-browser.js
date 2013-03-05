@@ -6,6 +6,90 @@ var output
 var status = 'nothing' // reflects what status the buttons show: 'running' or 'nothing'
 var changing ='' // for starting/stopping states
 var state // various things shared with share.js, including group consideration of the running status
+var doneLoad = false
+
+// Set up editor whenever we have a good share.js connection
+var load_and_wire_up_editor = function() {
+  async.parallel( [
+    // Wire up shared document on the connection
+    function(callback) {
+      console.log("sharing doc...")
+      // XXX need a better token in here. API key?
+      var docName = 'scraperwiki-' + scraperwiki.box + '-doc005'
+      connection.open(docName, 'text', function(error, doc) {
+        if (error) {
+          console.log("sharing doc error", error)
+          scraperwiki.alert("Trouble setting up pair editing!", error, true)
+          callback(true, null)
+        }
+        console.log("...shared doc")
+        editorShare = doc
+        callback(null, doc)
+      })
+    },
+    // Wire up shared state on the connection
+    function(callback) {
+      console.log("sharing state...")
+      // XXX need a better token in here. API key?
+      var docName = 'scraperwiki-' + scraperwiki.box + '-state005'
+      connection.open(docName, 'json', function(error, doc) {
+        if (error) {
+          console.log("sharing state error", error)
+          scraperwiki.alert("Trouble setting up pair state!", error, true)
+          callback(true, null)
+        }
+        state = doc
+        // Start to share status
+        if (state.created) {
+          console.log("first time this state connection has been used, initialising")
+          state.submitOp([{p:[],od:null,oi:{status:'nothing'}}])
+        }
+        state.on('change', function (op) {
+          shared_state_update(op)
+        })
+        console.log("...shared state")
+        callback(null, doc)
+      })
+    }
+  ], function(err, results) {
+    if (err) {
+      scraperwiki.alert("Gave up setup of pair stuff!", err, true)
+      return
+    }
+
+    // Load code from file
+    console.log("loading...")
+    scraperwiki.exec('mkdir -p code && touch code/scraper && cat code/scraper && echo -n swinternalGOTCODEOFSCRAPER', function(data) {
+      if (data.indexOf("swinternalGOTCODEOFSCRAPER") == -1) {
+        scraperwiki.alert("Trouble loading code!", data, true)
+        return
+      }
+      data = data.replace("swinternalGOTCODEOFSCRAPER", "")
+
+      // If nothing there, set some default content to get people going
+      if (data.match(/^\s*$/)) {
+        data = "#!/usr/bin/python\n\nimport scraperwiki\n\n"
+      }
+      console.log("...loaded")
+
+      // Connect editor window to the doc
+      editorShare.attach_ace(editor)
+      set_editor_mode(data)
+      editor.setValue(data) // XXX this overrides what is in filesystem on top of what is in sharej
+      editor.moveCursorTo(0, 0)
+      editor.focus()
+      editor.setReadOnly(false)
+      doneLoad = true
+
+      update_dirty(false)
+      editor.on('change', function() {
+        update_dirty(true)
+      })
+
+      poll_output()
+    }, handle_exec_error)
+  });
+}
 
 // Handle error
 var handle_exec_error = function(jqXHR, textStatus, errorThrown) {
@@ -253,108 +337,25 @@ $(document).ready(function() {
   editor.setTheme("ace/theme/monokai")
   editor.setReadOnly(true)
 
-  async.auto({
-    // Connect to sharejs server
-    sharejs_connection: function(callback) {
-      console.log("connecting...")
-      connection = new sharejs.Connection('http://seagrass.goatchurch.org.uk/sharejs/channel')
-      connection.on("error", function(e) {
-          clear_alerts()
-          scraperwiki.alert("Editor is offline!", e, false)
-      })
-      connection.on("ok", function(e) {
-          clear_alerts()
-      })
-
-      console.log("...connected")
-      callback(null, connection)
-    },
-    // Wire up shared document on the connection
-    share_doc: ['sharejs_connection', function(callback, results) {
-      console.log("sharing doc...")
-      // XXX need a better token in here. API key?
-      var docName = 'scraperwiki-' + scraperwiki.box + '-doc005'
-      connection.open(docName, 'text', function(error, doc) {
-        if (error) {
-          console.log("sharing doc error", error)
-          scraperwiki.alert("Trouble setting up pair editing!", error, true)
-          callback(true, null)
-        }
-        console.log("...shared doc")
-        editorShare = doc
-        callback(null, doc)
-      })
-    }],
-    share_state: ['sharejs_connection', function(callback, results) {
-      console.log("sharing state...")
-      // XXX need a better token in here. API key?
-      var docName = 'scraperwiki-' + scraperwiki.box + '-state005'
-      connection.open(docName, 'json', function(error, doc) {
-        if (error) {
-          console.log("sharing state error", error)
-          scraperwiki.alert("Trouble setting up pair state!", error, true)
-          callback(true, null)
-        }
-        state = doc
-        // Start to share status
-        if (state.created) {
-          console.log("first time this state connection has been used, initialising")
-          state.submitOp([{p:[],od:null,oi:{status:'nothing'}}])
-        }
-        state.on('change', function (op) {
-          shared_state_update(op)
-        })
-        console.log("...shared state")
-        callback(null, doc)
-      })
-    }]
-   }, function(err, results) {
-      if (err) {
-        scraperwiki.alert("Gave up setup of pair stuff!", err, true)
-        return
-      }
-
-      // Load code from file
-      console.log("loading...")
-      scraperwiki.exec('mkdir -p code && touch code/scraper && cat code/scraper && echo -n swinternalGOTCODEOFSCRAPER', function(data) {
-        if (data.indexOf("swinternalGOTCODEOFSCRAPER") == -1) {
-          scraperwiki.alert("Trouble loading code!", data, true)
-          return
-        }
-        data = data.replace("swinternalGOTCODEOFSCRAPER", "")
-
-        // If nothing there, set some default content to get people going
-        if (data.match(/^\s*$/)) {
-          data = "#!/usr/bin/python\n\nimport scraperwiki\n\n"
-        }
-        console.log("...loaded")
-
-        // Connect editor window to the doc
-        editorShare.attach_ace(editor)
-        set_editor_mode(data)
-        editor.setValue(data) // XXX this overrides what is in filesystem on top of what is in sharej
-        editor.moveCursorTo(0, 0)
-        editor.focus()
+  // Connect to sharejs server
+  console.log("connecting...")
+  connection = new sharejs.Connection('http://seagrass.goatchurch.org.uk/sharejs/channel')
+  connection.on("error", function(e) {
+      console.log("sharejs connection: error")
+      clear_alerts()
+      scraperwiki.alert("Editor is offline!", e, false)
+      doneLoad = false
+      editor.setReadOnly(true)
+  })
+  connection.on("ok", function(e) {
+      console.log("sharejs connection: ok")
+      clear_alerts()
+      load_and_wire_up_editor()
+      if (doneLoad) {
         editor.setReadOnly(false)
-
-        update_dirty(false)
-        editor.on('change', function() {
-          update_dirty(true)
-        })
-
-        connection.on("error", function(e) {
-            clear_alerts()
-            scraperwiki.alert("Editor is offline!", e, false)
-            editor.setReadOnly(true)
-        })
-        connection.on("ok", function(e) {
-            clear_alerts()
-            editor.setReadOnly(false)
-        })
-
-        poll_output()
-      }, handle_exec_error)
-   });
+      }
+  })
+  console.log("...connected")
 
   // Create the console output window
   output = ace.edit("output")
