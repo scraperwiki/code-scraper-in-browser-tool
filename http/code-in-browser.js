@@ -6,14 +6,18 @@ var changing ='' // for starting/stopping states
 var state // various things shared with share.js, including group consideration of the running status
 
 // Handle error
-var handle_error = function(jqXHR, textStatus, errorThrown) {
+var handle_exec_error = function(jqXHR, textStatus, errorThrown) {
     console.log("got an error:", errorThrown, jqXHR, textStatus)
-    // Handle special case of no network error
+    // Handle special case of the browser not being connected to the net
     // http://stackoverflow.com/questions/10026204/dialog-box-if-there-is-no-internet-connection-using-jquery-or-ajax
     if (jqXHR.status == 0) { 
-      scraperwiki.alert("No connection to Internet!", jqXHR.responseText, "error")
+      // Wait half a second before error - otherwise they show on page refresh,
+      // we only want to show if the browser is disconneted from the network.
+      setTimeout(function() {
+        scraperwiki.alert("No connection to Internet!", "", "error")
+      } , 500)
     } else {
-      scraperwiki.alert(errorThrown, jqXHR.responseText, "error")
+      scraperwiki.alert(errorThrown, $(jqXHR.responseText).text, "error")
     }
 }
 
@@ -135,8 +139,8 @@ var poll_output = function() {
       if (again) {
         setTimeout(poll_output, 10)
       }
-    }, handle_error)
-  }, handle_error)
+    }, handle_exec_error)
+  }, handle_exec_error)
 }
 
 
@@ -168,7 +172,7 @@ var save_code = function(extraCmds, callback) {
     if (callback) {
       callback(text)
     }
-  }, handle_error)
+  }, handle_exec_error)
 }
 
 // When the "documentation" button is pressed
@@ -238,7 +242,7 @@ $(document).ready(function() {
           data = "#!/usr/bin/python\n\nimport scraperwiki\n\n"
         }
         callback(null, data)
-      }, handle_error)
+      }, handle_exec_error)
     },
     // Connect to sharejs
     sharejs_connection: function(callback) {
