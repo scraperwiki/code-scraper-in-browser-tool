@@ -115,7 +115,11 @@ var set_status = function(new_status) {
   }
 
   // Tell other ShareJS clients the status has changed
-  state.submitOp( {p:['status'],od:status,oi:new_status}) // XXX state.status for od?
+  try {
+    state.submitOp( {p:['status'],od:status,oi:new_status}) // XXX state.status for od?
+  } catch (e) {
+    scraperwiki.alert("Error saving to ShareJS!", e, true)
+  }
 }
 
 // Console get more output
@@ -268,7 +272,7 @@ $(document).ready(function() {
     share_doc: ['sharejs_connection', function(callback, results) {
       console.log("sharing doc...")
       // XXX need a better token in here. API key?
-      var docName = 'scraperwiki-' + scraperwiki.box + '-doc001'
+      var docName = 'scraperwiki-' + scraperwiki.box + '-doc002'
       results.sharejs_connection.open(docName, 'text', function(error, doc) {
         if (error) {
           scraperwiki.alert("Trouble setting up pair editing!", error, true)
@@ -280,7 +284,7 @@ $(document).ready(function() {
     share_state: ['sharejs_connection', function(callback, results) {
       console.log("sharing state...")
       // XXX need a better token in here. API key?
-      var docName = 'scraperwiki-' + scraperwiki.box + '-state001'
+      var docName = 'scraperwiki-' + scraperwiki.box + '-state002'
       results.sharejs_connection.open(docName, 'json', function(error, doc) {
         if (error) {
           scraperwiki.alert("Trouble setting up pair state!", error, true)
