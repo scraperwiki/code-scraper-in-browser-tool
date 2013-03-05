@@ -1,5 +1,7 @@
+var connection
 var editor
 var editorDirty = false
+var editorShare
 var output
 var status = 'nothing' // reflects what status the buttons show: 'running' or 'nothing'
 var changing ='' // for starting/stopping states
@@ -14,7 +16,8 @@ var handle_exec_error = function(jqXHR, textStatus, errorThrown) {
       // Wait half a second before error - otherwise they show on page refresh,
       // we only want to show if the browser is disconneted from the network.
       setTimeout(function() {
-        scraperwiki.alert("No connection to Internet!", "", true)
+        clear_alerts()
+        scraperwiki.alert("No connection to Internet!", "", false)
       } , 500)
     } else {
       scraperwiki.alert(errorThrown, $(jqXHR.responseText).text(), "error")
@@ -171,7 +174,7 @@ var save_code = function(callback) {
 
     // Check actual content against saved - in case there was a change while we executed
     if (editor.getValue() == code) {
-      console.log("Saved fine without intereference")
+      console.log("Saved fine without interference")
       update_dirty(false)
     } else {
       console.log("Ooops, it got dirty while saving")
@@ -251,56 +254,44 @@ $(document).ready(function() {
   editor.setReadOnly(true)
 
   async.auto({
-    // Load code from file
-    load_code: function(callback) {
-      console.log("loading...")
-      scraperwiki.exec('mkdir -p code && touch code/scraper && cat code/scraper && echo -n swinternalGOTCODEOFSCRAPER', function(data) {
-        if (data.indexOf("swinternalGOTCODEOFSCRAPER") == -1) {
-          scraperwiki.alert("Trouble loading code!", data, true)
-          return
-        }
-        data = data.replace("swinternalGOTCODEOFSCRAPER", "")
-
-        // If nothing there, set some default content to get people going
-        if (data.match(/^\s*$/)) {
-          data = "#!/usr/bin/python\n\nimport scraperwiki\n\n"
-        }
-        callback(null, data)
-      }, handle_exec_error)
-    },
-    // Connect to sharejs
+    // Connect to sharejs server
     sharejs_connection: function(callback) {
       console.log("connecting...")
       connection = new sharejs.Connection('http://seagrass.goatchurch.org.uk/sharejs/channel')
       connection.on("error", function(e) {
           clear_alerts()
-          scraperwiki.alert("Pair editing is offline!", e, false)
+          scraperwiki.alert("Editor is offline!", e, false)
       })
       connection.on("ok", function(e) {
           clear_alerts()
       })
 
+      console.log("...connected")
       callback(null, connection)
     },
     // Wire up shared document on the connection
     share_doc: ['sharejs_connection', function(callback, results) {
       console.log("sharing doc...")
       // XXX need a better token in here. API key?
-      var docName = 'scraperwiki-' + scraperwiki.box + '-doc003'
-      results.sharejs_connection.open(docName, 'text', function(error, doc) {
+      var docName = 'scraperwiki-' + scraperwiki.box + '-doc005'
+      connection.open(docName, 'text', function(error, doc) {
         if (error) {
+          console.log("sharing doc error", error)
           scraperwiki.alert("Trouble setting up pair editing!", error, true)
           callback(true, null)
         }
+        console.log("...shared doc")
+        editorShare = doc
         callback(null, doc)
       })
     }],
     share_state: ['sharejs_connection', function(callback, results) {
       console.log("sharing state...")
       // XXX need a better token in here. API key?
-      var docName = 'scraperwiki-' + scraperwiki.box + '-state003'
-      results.sharejs_connection.open(docName, 'json', function(error, doc) {
+      var docName = 'scraperwiki-' + scraperwiki.box + '-state005'
+      connection.open(docName, 'json', function(error, doc) {
         if (error) {
+          console.log("sharing state error", error)
           scraperwiki.alert("Trouble setting up pair state!", error, true)
           callback(true, null)
         }
@@ -313,6 +304,7 @@ $(document).ready(function() {
         state.on('change', function (op) {
           shared_state_update(op)
         })
+        console.log("...shared state")
         callback(null, doc)
       })
     }]
@@ -321,23 +313,47 @@ $(document).ready(function() {
         scraperwiki.alert("Gave up setup of pair stuff!", err, true)
         return
       }
-      var data = results.load_code
-      var doc = results.share_doc
 
-      // Connect editor window to the doc
-      doc.attach_ace(editor)
-      set_editor_mode(data)
-      editor.setValue(data) // XXX this overrides what is in filesystem on top of what is in sharej
-      editor.moveCursorTo(0, 0)
-      editor.focus()
-      editor.setReadOnly(false)
+      // Load code from file
+      console.log("loading...")
+      scraperwiki.exec('mkdir -p code && touch code/scraper && cat code/scraper && echo -n swinternalGOTCODEOFSCRAPER', function(data) {
+        if (data.indexOf("swinternalGOTCODEOFSCRAPER") == -1) {
+          scraperwiki.alert("Trouble loading code!", data, true)
+          return
+        }
+        data = data.replace("swinternalGOTCODEOFSCRAPER", "")
 
-      update_dirty(false)
-      editor.on('change', function() {
-        update_dirty(true)
-      })
+        // If nothing there, set some default content to get people going
+        if (data.match(/^\s*$/)) {
+          data = "#!/usr/bin/python\n\nimport scraperwiki\n\n"
+        }
+        console.log("...loaded")
 
-      poll_output()
+        // Connect editor window to the doc
+        editorShare.attach_ace(editor)
+        set_editor_mode(data)
+        editor.setValue(data) // XXX this overrides what is in filesystem on top of what is in sharej
+        editor.moveCursorTo(0, 0)
+        editor.focus()
+        editor.setReadOnly(false)
+
+        update_dirty(false)
+        editor.on('change', function() {
+          update_dirty(true)
+        })
+
+        connection.on("error", function(e) {
+            clear_alerts()
+            scraperwiki.alert("Editor is offline!", e, false)
+            editor.setReadOnly(true)
+        })
+        connection.on("ok", function(e) {
+            clear_alerts()
+            editor.setReadOnly(false)
+        })
+
+        poll_output()
+      }, handle_exec_error)
    });
 
   // Create the console output window
