@@ -214,7 +214,7 @@ var do_run = function() {
       console.log("enrunerate stop:", text)
       // And tell all clients that we're now not running code (if we're not!)
       set_status(text)
-    })
+    }, handle_exec_error)
     return
   }
 
