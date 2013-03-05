@@ -277,6 +277,7 @@ $(document).ready(function() {
           scraperwiki.alert("Pair editing is offline!", e, false)
       })
       connection.on("ok", function(e) {
+          clear_alerts()
       })
 
       callback(null, connection)
@@ -345,6 +346,7 @@ $(document).ready(function() {
   // ... we use /bin/sh syntax highlighting, the only other at all
   // credible option for such varied output is plain text, which is dull.
   output.getSession().setMode("ace/mode/sh")
+  output.setReadOnly(true)
 
   // Bind all the buttons to do something
   $('#docs').on('click', do_docs)
