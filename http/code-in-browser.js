@@ -14,7 +14,7 @@ var handle_exec_error = function(jqXHR, textStatus, errorThrown) {
       // Wait half a second before error - otherwise they show on page refresh,
       // we only want to show if the browser is disconneted from the network.
       setTimeout(function() {
-        scraperwiki.alert("No connection to Internet!", "", "error")
+        scraperwiki.alert("No connection to Internet!", "", true)
       } , 500)
     } else {
       scraperwiki.alert(errorThrown, $(jqXHR.responseText).text(), "error")
@@ -244,6 +244,12 @@ $(document).ready(function() {
   settings = scraperwiki.readSettings()
   $('#apikey').val(settings.source.apikey)
 
+  // Create editor window, read only until it is ready
+  editor = ace.edit("editor")
+  editor.getSession().setUseSoftTabs(true)
+  editor.setTheme("ace/theme/monokai")
+  editor.setReadOnly(true)
+
   async.auto({
     // Load code from file
     load_code: function(callback) {
@@ -266,6 +272,13 @@ $(document).ready(function() {
     sharejs_connection: function(callback) {
       console.log("connecting...")
       connection = new sharejs.Connection('http://seagrass.goatchurch.org.uk/sharejs/channel')
+      connection.on("error", function(e) {
+          clear_alerts()
+          scraperwiki.alert("Pair editing is offline!", e, false)
+      })
+      connection.on("ok", function(e) {
+      })
+
       callback(null, connection)
     },
     // Wire up shared document on the connection
@@ -290,35 +303,34 @@ $(document).ready(function() {
           scraperwiki.alert("Trouble setting up pair state!", error, true)
           callback(true, null)
         }
+        state = doc
+        // Start to share status
+        if (state.created) {
+          console.log("first time this state connection has been used, initialising")
+          state.submitOp([{p:[],od:null,oi:{status:'nothing'}}])
+        }
+        state.on('change', function (op) {
+          shared_state_update(op)
+        })
         callback(null, doc)
       })
     }]
    }, function(err, results) {
       if (err) {
+        scraperwiki.alert("Gave up setup of pair stuff!", err, true)
         return
       }
       var data = results.load_code
       var doc = results.share_doc
-      state = results.share_state
 
-      // Start to share status
-      if (state.created) {
-        console.log("first time this state connection has been used, initialising")
-        state.submitOp([{p:[],od:null,oi:{status:'nothing'}}])
-      }
-      state.on('change', function (op) {
-        shared_state_update(op)
-      })
-
-      // Create editor window
-      editor = ace.edit("editor")
-      editor.getSession().setUseSoftTabs(true)
-      editor.setTheme("ace/theme/monokai")
+      // Connect editor window to the doc
       set_editor_mode(data)
       doc.attach_ace(editor)
+
       editor.setValue(data) // XXX this overrides what is in filesystem on top of what is in sharej
       editor.moveCursorTo(0, 0)
       editor.focus()
+      editor.setReadOnly(false)
 
       update_dirty(false)
       editor.on('change', function() {
