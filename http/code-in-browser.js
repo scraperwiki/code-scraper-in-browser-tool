@@ -151,14 +151,14 @@ var clear_alerts = function() {
 
 // Save the code - optionally takes text of extra commands to also 
 // in the same "exec" and a callback to run when done
-var save_code = function(extraCmds, callback) {
+var save_code = function(callback) {
   clearTimeout(save_code) // stop any already scheduled timed saves
   var code = editor.getValue()
   if (code.length == 0 || code.charAt(code.length - 1) != "\n") {
     code += "\n" // we need a separator \n at the end of the file for the ENDOFSCRAPER heredoc below
   }
   var cmd = "cat >code/scraper.new.$$ <<ENDOFSCRAPER\n" + code + "ENDOFSCRAPER\n"
-  cmd = cmd + "chmod a+x code/scraper.new.$$; mv code/scraper.new.$$ code/scraper; " + extraCmds
+  cmd = cmd + "chmod a+x code/scraper.new.$$; mv code/scraper.new.$$ code/scraper"
   scraperwiki.exec(cmd, function(text) {
     // Check actual content against saved - in case there was a change while we executed
     if (editor.getValue() == code) {
@@ -219,11 +219,14 @@ var do_run = function() {
   update_display_from_status(status)
   output.setValue("")
 
-  // Save code, run it
-  save_code("./tool/enrunerate run", function (text) {
-    console.log("enrunerate run:", text)
-    // And tell all clients that we're now running code (if we are!)
-    set_status(text)
+  // Save code
+  save_code(function (text) {
+    // Then run it
+    scraperwiki.exec("./tool/enrunerate run", function(text) {
+      console.log("enrunerate run:", text)
+      // And tell all clients that we're now running code (if we are!)
+      set_status(text)
+    }, handle_exec_error)
   })
 }
 
