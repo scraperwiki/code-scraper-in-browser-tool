@@ -18,7 +18,7 @@ var load_and_wire_up_editor = function() {
     function(callback) {
       console.log("sharing doc...")
       // XXX need a better token in here. API key?
-      var docName = 'scraperwiki-' + scraperwiki.box + '-doc005'
+      var docName = 'scraperwiki-' + scraperwiki.box + '-doc006'
       connection.open(docName, 'text', function(error, doc) {
         if (error) {
           console.log("sharing doc error", error)
@@ -34,7 +34,7 @@ var load_and_wire_up_editor = function() {
     function(callback) {
       console.log("sharing state...")
       // XXX need a better token in here. API key?
-      var docName = 'scraperwiki-' + scraperwiki.box + '-state005'
+      var docName = 'scraperwiki-' + scraperwiki.box + '-state006'
       connection.open(docName, 'json', function(error, doc) {
         if (error) {
           console.log("sharing state error", error)
@@ -59,36 +59,53 @@ var load_and_wire_up_editor = function() {
       scraperwiki.alert("Gave up setup of pair stuff!", err, true)
       return
     }
-
-    // Load code from file
-    console.log("loading...")
-    scraperwiki.exec('mkdir -p code && touch code/scraper && cat code/scraper && echo -n swinternalGOTCODEOFSCRAPER', function(data) {
-      if (data.indexOf("swinternalGOTCODEOFSCRAPER") == -1) {
-        scraperwiki.alert("Trouble loading code!", data, true)
-        return
-      }
-      data = data.replace("swinternalGOTCODEOFSCRAPER", "")
-
-      // If nothing there, set some default content to get people going
-      if (data.match(/^\s*$/)) {
-        data = "#!/usr/bin/python\n\nimport scraperwiki\n\n"
-      }
-      console.log("...loaded")
-
-      // Connect editor window to the doc
-      editorShare.attach_ace(editor)
-      set_editor_mode(data)
-      editor.setValue(data) // XXX this overrides what is in filesystem on top of what is in sharejs
-      editor.moveCursorTo(0, 0)
-      editor.focus()
-      editor.setReadOnly(false)
-      doneLoad = true
-
-      update_dirty(false)
-
-      poll_output()
-    }, handle_exec_error)
+    if (editorShare.created) {
+      load_code_from_file()
+    } else {
+      allow_editing()
+    }
   });
+}
+
+// Used to initialise what is in the ShareJS server from the filesystem the
+// first time run for the instantiation of the ShareJS server.
+var load_code_from_file = function() {
+  console.log("loading...")
+  scraperwiki.exec('mkdir -p code && touch code/scraper && cat code/scraper && echo -n swinternalGOTCODEOFSCRAPER', function(data) {
+    if (data.indexOf("swinternalGOTCODEOFSCRAPER") == -1) {
+      scraperwiki.alert("Trouble loading code!", data, true)
+      return
+    }
+    data = data.replace("swinternalGOTCODEOFSCRAPER", "")
+
+    // If nothing there, set some default content to get people going
+    if (data.match(/^\s*$/)) {
+      data = "#!/usr/bin/python\n\nimport scraperwiki\n\n"
+    }
+    console.log("...loaded")
+
+    allow_editing(data)
+  }, handle_exec_error)
+}
+
+// After loading, or if to get initial state from ShareJS make editor read only
+var allow_editing = function(data) {
+  doneLoad = true
+
+  // Connect editor window to the doc
+  editorShare.attach_ace(editor)
+  if (data) {
+    editor.setValue(data) // XXX this overrides what is in filesystem on top of what is in sharejs
+  }
+  set_editor_mode(editor.getValue())
+  editor.moveCursorTo(0, 0)
+  editor.focus()
+  editor.setReadOnly(false)
+  $('#editor').show()
+
+  update_dirty(false)
+
+  poll_output()
 }
 
 // Handle error
