@@ -7,7 +7,7 @@ var editorShare
 var output
 var status = 'nothing' // reflects what status the buttons show: 'running' or 'nothing'
 var changing ='' // for starting/stopping states
-var state // various things shared with share.js, including group consideration of the running status
+var stateShare // various things shared with share.js, including group consideration of the running status
 var doneLoad = false // we've initialised the editor, so can autosave to disk now
 var saveTimeout
 
@@ -18,7 +18,7 @@ var load_and_wire_up_editor = function() {
     function(callback) {
       console.log("sharing doc...")
       // XXX need a better token in here. API key?
-      var docName = 'scraperwiki-' + scraperwiki.box + '-doc006'
+      var docName = 'scraperwiki-' + scraperwiki.box + '-doc007'
       connection.open(docName, 'text', function(error, doc) {
         if (error) {
           console.log("sharing doc error", error)
@@ -34,20 +34,20 @@ var load_and_wire_up_editor = function() {
     function(callback) {
       console.log("sharing state...")
       // XXX need a better token in here. API key?
-      var docName = 'scraperwiki-' + scraperwiki.box + '-state006'
+      var docName = 'scraperwiki-' + scraperwiki.box + '-state007'
       connection.open(docName, 'json', function(error, doc) {
         if (error) {
           console.log("sharing state error", error)
           scraperwiki.alert("Trouble setting up pair state!", error, true)
           callback(true, null)
         }
-        state = doc
+        stateShare = doc
         // Start to share status
-        if (state.created) {
+        if (stateShare.created) {
           console.log("first time this state connection has been used, initialising")
-          state.submitOp([{p:[],od:null,oi:{status:'nothing'}}])
+          stateShare.submitOp([{p:[],od:null,oi:{status:'nothing'}}])
         }
-        state.on('change', function (op) {
+        stateShare.on('change', function (op) {
           shared_state_update(op)
         })
         console.log("...shared state")
@@ -182,10 +182,10 @@ var set_editor_mode = function(code) {
 
 // Got a new state over ShareJS (from ourselves or remote clients)
 var shared_state_update = function(op) {
-  console.log("shared_state_update", state.snapshot)
+  console.log("shared_state_update", stateShare.snapshot)
 
   // Respond to the status change
-  var new_status = state.snapshot.status
+  var new_status = stateShare.snapshot.status
   if (new_status != status) {
     console.log("status change", status, "===>", new_status)
     if (new_status == "running") {
@@ -221,7 +221,7 @@ var set_status = function(new_status) {
 
   // Tell other ShareJS clients the status has changed
   try {
-    state.submitOp( {p:['status'],od:status,oi:new_status}) // XXX state.status for od?
+    stateShare.submitOp( {p:['status'],od:status,oi:new_status})
   } catch (e) {
     scraperwiki.alert("Error saving to ShareJS!", e, true)
   }
@@ -380,12 +380,12 @@ $(document).ready(function() {
   connection.on("ok", function(e) {
       console.log("sharejs connection: ok")
       clear_alerts()
-      load_and_wire_up_editor()
       if (doneLoad) {
         editor.setReadOnly(false)
       }
   })
   console.log("...connected")
+  load_and_wire_up_editor()
 
   // Create the console output window
   output = ace.edit("output")
