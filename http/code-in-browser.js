@@ -1,3 +1,5 @@
+// Source code repository: https://github.com/frabcus/code-scraper-in-browser-tool/
+
 var connection
 var editor
 var editorDirty = false
