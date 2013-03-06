@@ -8,7 +8,6 @@ var output
 var status = 'nothing' // reflects what status the buttons show: 'running' or 'nothing'
 var changing ='' // for starting/stopping states
 var stateShare // various things shared with share.js, including group consideration of the running status
-var doneLoad = false // we've initialised the editor, so can autosave to disk now
 var saveTimeout
 
 // Set up editor whenever we have a good share.js connection
@@ -18,7 +17,7 @@ var load_and_wire_up_editor = function() {
     function(callback) {
       console.log("sharing doc...")
       // XXX need a better token in here. API key?
-      var docName = 'scraperwiki-' + scraperwiki.box + '-doc007'
+      var docName = 'scraperwiki-' + scraperwiki.box + '-doc011'
       connection.open(docName, 'text', function(error, doc) {
         if (error) {
           console.log("sharing doc error", error)
@@ -27,14 +26,23 @@ var load_and_wire_up_editor = function() {
         }
         console.log("...shared doc")
         editorShare = doc
-        callback(null, doc)
+        editorShare.attach_ace(editor)
+
+        if (editorShare.created) {
+          load_code_from_file()
+        } else {
+          // get syntax highlighting right
+          set_editor_mode(editor.getValue())
+        }
+        editor.moveCursorTo(0, 0)
+        editor.focus()
       })
     },
     // Wire up shared state on the connection
     function(callback) {
       console.log("sharing state...")
       // XXX need a better token in here. API key?
-      var docName = 'scraperwiki-' + scraperwiki.box + '-state007'
+      var docName = 'scraperwiki-' + scraperwiki.box + '-state011'
       connection.open(docName, 'json', function(error, doc) {
         if (error) {
           console.log("sharing state error", error)
@@ -42,7 +50,6 @@ var load_and_wire_up_editor = function() {
           callback(true, null)
         }
         stateShare = doc
-        // Start to share status
         if (stateShare.created) {
           console.log("first time this state connection has been used, initialising")
           stateShare.submitOp([{p:[],od:null,oi:{status:'nothing'}}])
@@ -51,20 +58,10 @@ var load_and_wire_up_editor = function() {
           shared_state_update(op)
         })
         console.log("...shared state")
-        callback(null, doc)
+        poll_output()
       })
     }
-  ], function(err, results) {
-    if (err) {
-      scraperwiki.alert("Gave up setup of pair stuff!", err, true)
-      return
-    }
-    if (editorShare.created) {
-      load_code_from_file()
-    } else {
-      allow_editing()
-    }
-  });
+  ]);
 }
 
 // Used to initialise what is in the ShareJS server from the filesystem the
@@ -84,27 +81,12 @@ var load_code_from_file = function() {
     }
     console.log("...loaded")
 
-    allow_editing(data)
-  }, handle_exec_error)
-}
-
-// After loading, or if to get initial state from ShareJS make editor read only
-var allow_editing = function(data) {
-  doneLoad = true
-
-  // Connect editor window to the doc
-  editorShare.attach_ace(editor)
-  if (data) {
+    set_editor_mode(data)
     editor.setValue(data) // XXX this overrides what is in filesystem on top of what is in sharejs
-  }
-  set_editor_mode(editor.getValue())
-  editor.moveCursorTo(0, 0)
-  editor.focus()
-  editor.setReadOnly(false)
-
-  update_dirty(false)
-
-  poll_output()
+    editor.moveCursorTo(0, 0)
+    editor.focus()
+    update_dirty(false)
+  }, handle_exec_error)
 }
 
 // Handle error
@@ -261,14 +243,12 @@ var clear_alerts = function() {
 var save_code = function(callback) {
   clearTimeout(saveTimeout) // stop any already scheduled timed saves
 
-  console.log("trying to save version:", editorShare.version)
-
-  // don't overwrite disk file with blankness
-  if (!doneLoad) {
+  if (!editorShare) {
+    console.log("not saving, no share connection")
     return
   }
 
-  console.log("save_code...")
+  console.log("save_code... version", editorShare.version)
   var code = editor.getValue()
   if (code.length == 0 || code.charAt(code.length - 1) != "\n") {
     code += "\n" // we need a separator \n at the end of the file for the ENDOFSCRAPER heredoc below
@@ -360,11 +340,8 @@ $(document).ready(function() {
   editor = ace.edit("editor")
   editor.getSession().setUseSoftTabs(true)
   editor.setTheme("ace/theme/monokai")
-  editor.setReadOnly(true)
   editor.on('change', function() {
-    if (doneLoad) {
-      update_dirty(true)
-    }
+    update_dirty(true)
   })
 
   // Connect to sharejs server
@@ -374,15 +351,10 @@ $(document).ready(function() {
       console.log("sharejs connection: error")
       clear_alerts()
       scraperwiki.alert("Editor is offline!", e, false)
-      doneLoad = false
-      editor.setReadOnly(true)
   })
   connection.on("ok", function(e) {
       console.log("sharejs connection: ok")
       clear_alerts()
-      if (doneLoad) {
-        editor.setReadOnly(false)
-      }
   })
   console.log("...connected")
   load_and_wire_up_editor()
@@ -393,7 +365,6 @@ $(document).ready(function() {
   // ... we use /bin/sh syntax highlighting, the only other at all
   // credible option for such varied output is plain text, which is dull.
   output.getSession().setMode("ace/mode/sh")
-  output.setReadOnly(true)
 
   // Bind all the buttons to do something
   $('#docs').on('click', do_docs)
