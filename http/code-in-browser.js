@@ -101,7 +101,6 @@ var allow_editing = function(data) {
   editor.moveCursorTo(0, 0)
   editor.focus()
   editor.setReadOnly(false)
-  $('#editor').show()
 
   update_dirty(false)
 
