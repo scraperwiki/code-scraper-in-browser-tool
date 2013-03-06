@@ -8,7 +8,8 @@ var output
 var status = 'nothing' // reflects what status the buttons show: 'running' or 'nothing'
 var changing ='' // for starting/stopping states
 var state // various things shared with share.js, including group consideration of the running status
-var doneLoad = false
+var doneLoad = false // we've initialised the editor, so can autosave to disk now
+var saveTimeout
 
 // Set up editor whenever we have a good share.js connection
 var load_and_wire_up_editor = function() {
@@ -77,16 +78,13 @@ var load_and_wire_up_editor = function() {
       // Connect editor window to the doc
       editorShare.attach_ace(editor)
       set_editor_mode(data)
-      editor.setValue(data) // XXX this overrides what is in filesystem on top of what is in sharej
+      editor.setValue(data) // XXX this overrides what is in filesystem on top of what is in sharejs
       editor.moveCursorTo(0, 0)
       editor.focus()
       editor.setReadOnly(false)
       doneLoad = true
 
       update_dirty(false)
-      editor.on('change', function() {
-        update_dirty(true)
-      })
 
       poll_output()
     }, handle_exec_error)
@@ -112,13 +110,14 @@ var handle_exec_error = function(jqXHR, textStatus, errorThrown) {
 
 // Display whether we have unsaved edits
 var update_dirty = function(value) {
-  clearTimeout(save_code)
+  clearTimeout(saveTimeout)
   editorDirty = value
   if (editorDirty) {
     // Wait three seconds and then save. If we get another change
     // in those three seconds, reset that timer to avoid excess saves.
     $("#saved").text("Saving...")
-    setTimeout(save_code, 3000)
+    //console.log("setTimeout save_code, 3000")
+    saveTimeout = setTimeout(save_code, 3000)
   } else {
     $("#saved").text("All changes saved")
   }
@@ -245,7 +244,14 @@ var clear_alerts = function() {
 // Save the code - optionally takes text of extra commands to also 
 // in the same "exec" and a callback to run when done
 var save_code = function(callback) {
-  clearTimeout(save_code) // stop any already scheduled timed saves
+  clearTimeout(saveTimeout) // stop any already scheduled timed saves
+
+  // don't overwrite disk file with blankness
+  if (!doneLoad) {
+    return
+  }
+
+  console.log("save_code...")
   var code = editor.getValue()
   if (code.length == 0 || code.charAt(code.length - 1) != "\n") {
     code += "\n" // we need a separator \n at the end of the file for the ENDOFSCRAPER heredoc below
@@ -338,6 +344,11 @@ $(document).ready(function() {
   editor.getSession().setUseSoftTabs(true)
   editor.setTheme("ace/theme/monokai")
   editor.setReadOnly(true)
+  editor.on('change', function() {
+    if (doneLoad) {
+      update_dirty(true)
+    }
+  })
 
   // Connect to sharejs server
   console.log("connecting...")
