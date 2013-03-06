@@ -1,67 +1,54 @@
 // Source code repository: https://github.com/frabcus/code-scraper-in-browser-tool/
 
-var connection
 var editor
 var editorDirty = false
 var editorShare
 var output
-var status = 'nothing' // reflects what status the buttons show: 'running' or 'nothing'
+var status = 'nothing' // currently belief about script execution status: 'running' or 'nothing'
 var changing ='' // for starting/stopping states
 var stateShare // various things shared with share.js, including group consideration of the running status
-var saveTimeout
+var saveTimeout // store handle to timeout so can clear it
 var connected = false
 
-// Set up editor whenever we have a good share.js connection
-var load_and_wire_up_editor = function() {
-  async.parallel( [
-    // Wire up shared document on the connection
-    function(callback) {
-      console.log("sharing doc...")
-      // XXX need a better token in here. API key?
-      var docName = 'scraperwiki-' + scraperwiki.box + '-doc011'
-      connection.open(docName, 'text', function(error, doc) {
-        if (error) {
-          console.log("sharing doc error", error)
-          scraperwiki.alert("Trouble setting up pair editing!", error, true)
-          callback(true, null)
-        }
-        console.log("...shared doc")
-        editorShare = doc
-        editorShare.attach_ace(editor)
+  // Wire up shared document on the connection
+var made_editor_connection = function(error, doc) {
+  if (error) {
+    console.log("sharing doc error", error)
+    scraperwiki.alert("Trouble setting up pair editing!", error, true)
+    return
+  }
+  console.log("shared doc")
 
-        if (editorShare.created) {
-          load_code_from_file()
-        } else {
-          // get syntax highlighting right
-          set_editor_mode(editor.getValue())
-        }
-        editor.moveCursorTo(0, 0)
-        editor.focus()
-      })
-    },
-    // Wire up shared state on the connection
-    function(callback) {
-      console.log("sharing state...")
-      // XXX need a better token in here. API key?
-      var docName = 'scraperwiki-' + scraperwiki.box + '-state011'
-      connection.open(docName, 'json', function(error, doc) {
-        if (error) {
-          console.log("sharing state error", error)
-          scraperwiki.alert("Trouble setting up pair state!", error, true)
-          callback(true, null)
-        }
-        stateShare = doc
-        if (stateShare.created) {
-          console.log("first time this state connection has been used, initialising")
-          stateShare.submitOp([{p:[],od:null,oi:{status:'nothing'}}])
-        }
-        stateShare.on('change', function (op) {
-          shared_state_update(op)
-        })
-        console.log("...shared state")
-      })
-    }
-  ]);
+  editorShare = doc
+  editorShare.attach_ace(editor)
+
+  if (editorShare.created) {
+    console.log("first time this document exists on ShareJS server, loading from filesystem")
+    load_code_from_file()
+  } else {
+    set_editor_mode(editor.getValue())
+  }
+  editor.moveCursorTo(0, 0)
+  editor.focus()
+}
+
+  // Wire up shared state on the connection
+var made_state_connection = function(error, doc) {
+  if (error) {
+    console.log("sharing state error", error)
+    scraperwiki.alert("Trouble setting up pair state!", error, true)
+    return
+  }
+  console.log("shared state")
+
+  stateShare = doc
+  if (stateShare.created) {
+    console.log("first time this state connection has been used, initialising")
+    stateShare.submitOp([{p:[],od:null,oi:{status:'nothing'}}])
+  }
+  stateShare.on('change', function (op) {
+    shared_state_update(op)
+  })
 }
 
 // Used to initialise what is in the ShareJS server from the filesystem the
@@ -99,7 +86,8 @@ var handle_exec_error = function(jqXHR, textStatus, errorThrown) {
       // we only want to show if the browser is disconneted from the network.
       setTimeout(function() {
         clear_alerts()
-        scraperwiki.alert("No connection to Internet!", "", false)
+        connected = false
+        refresh_saving_message()
       } , 500)
     } else {
       scraperwiki.alert(errorThrown, $(jqXHR.responseText).text(), "error")
@@ -108,17 +96,29 @@ var handle_exec_error = function(jqXHR, textStatus, errorThrown) {
 
 // Display whether we have unsaved edits,
 var update_dirty = function(value) {
-  clearTimeout(saveTimeout)
   editorDirty = value
+  refresh_saving_message()
+}
+
+// Refresh the saving and so on text
+var refresh_saving_message = function() {
+  clearTimeout(saveTimeout)
+
+  if (!connected) {
+    $("#saved").text("Offline")
+    return
+  }
+
   if (editorDirty) {
     // Wait three seconds and then save. If we get another change
     // in those three seconds, reset that timer to avoid excess saves.
-    $("#saved").text("Saving...")
     saveTimeout = setTimeout(save_code, 3000)
+    $("#saved").text("Saving...")
   } else {
     $("#saved").text("All changes saved")
-  }
+  } 
 }
+
 
 // Prevent navigation away if not saved
 // XXX this doesn't seem to work for close events in chrome in the frame
@@ -132,7 +132,7 @@ $(window).on('beforeunload', function() {
 var set_editor_mode = function(code) {
   var first = code.split("\n")[0]
   if (first.substr(0,2) != "#!") {
-    scraperwiki.alert("Specify language in the first line!", "For example, put <code>#!/usr/bin/ruby</code>, <code>#!/usr/bin/R</code> or <code>#!/usr/bin/python</code>.", false)
+    scraperwiki.alert("Specify language in the first line!", "For example, put <code>#!/usr/bin/ruby</code>, <code>#!/usr/bin/Rscript</code> or <code>#!/usr/bin/python</code>.", false)
     return false
   }
   // Please add more as you need them and send us a pull request!
@@ -194,6 +194,10 @@ var update_display_from_status = function(use_status) {
 
 // Show/hide things according to current state
 var set_status = function(new_status) {
+  if (!connected || !stateShare) {
+    return
+  }
+
   if (new_status != "running" && new_status != "nothing") {
     scraperwiki.alert("Unknown new status!", new_status, true)
     return
@@ -343,20 +347,22 @@ $(document).ready(function() {
     update_dirty(true)
   })
 
-  // Connect to sharejs server
+  // Initialise the ShareJS connections - it will automaticaly reuse the connection
   console.log("connecting...")
-  connection = new sharejs.Connection('http://seagrass.goatchurch.org.uk/sharejs/channel')
+  connection = sharejs.open('scraperwiki-' + scraperwiki.box + '-doc013', 'text', 'http://seagrass.goatchurch.org.uk/sharejs/channel', made_editor_connection)
+  sharejs.open('scraperwiki-' + scraperwiki.box + '-state013', 'json', 'http://seagrass.goatchurch.org.uk/sharejs/channel', made_state_connection)
   connection.on("error", function(e) {
       console.log("sharejs connection: error")
       clear_alerts()
-      scraperwiki.alert("Editor is offline!", e, false)
+      connected = false
+      refresh_saving_message()
   })
   connection.on("ok", function(e) {
       console.log("sharejs connection: ok")
       clear_alerts()
+      connected = true
+      refresh_saving_message()
   })
-  console.log("...connected")
-  load_and_wire_up_editor()
 
   // Create the console output window
   output = ace.edit("output")
