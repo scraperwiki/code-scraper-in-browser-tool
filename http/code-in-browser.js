@@ -9,6 +9,7 @@ var status = 'nothing' // reflects what status the buttons show: 'running' or 'n
 var changing ='' // for starting/stopping states
 var stateShare // various things shared with share.js, including group consideration of the running status
 var saveTimeout
+var connected = false
 
 // Set up editor whenever we have a good share.js connection
 var load_and_wire_up_editor = function() {
@@ -161,7 +162,7 @@ var set_editor_mode = function(code) {
 
 // Got a new state over ShareJS (from ourselves or remote clients)
 var shared_state_update = function(op) {
-  console.log("shared_state_update", stateShare.snapshot)
+  //console.log("shared_state_update", stateShare.snapshot)
 
   // Respond to the status change
   var new_status = stateShare.snapshot.status
@@ -209,7 +210,7 @@ var set_status = function(new_status) {
 // Console get more output
 var poll_output = function() {
   scraperwiki.exec("./tool/enrunerate", function(text) {
-    console.log("enrunerate:", text, "len:", text.length)
+    console.log("enrunerate:", text)
     set_status(text)
 
     // we poll one last time either way to be sure we get end of output...
