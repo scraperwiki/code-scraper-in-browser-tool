@@ -251,7 +251,6 @@ var poll_output = function() {
   }, handle_exec_error)
 }
 
-
 // Clear any errors
 var clear_alerts = function() {
   $(".alert").remove()
@@ -261,6 +260,8 @@ var clear_alerts = function() {
 // in the same "exec" and a callback to run when done
 var save_code = function(callback) {
   clearTimeout(saveTimeout) // stop any already scheduled timed saves
+
+  console.log("trying to save version:", editorShare.version)
 
   // don't overwrite disk file with blankness
   if (!doneLoad) {
