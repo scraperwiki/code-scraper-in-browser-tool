@@ -58,7 +58,6 @@ var load_and_wire_up_editor = function() {
           shared_state_update(op)
         })
         console.log("...shared state")
-        poll_output()
       })
     }
   ]);
@@ -106,7 +105,7 @@ var handle_exec_error = function(jqXHR, textStatus, errorThrown) {
     }
 }
 
-// Display whether we have unsaved edits
+// Display whether we have unsaved edits,
 var update_dirty = function(value) {
   clearTimeout(saveTimeout)
   editorDirty = value
@@ -114,7 +113,6 @@ var update_dirty = function(value) {
     // Wait three seconds and then save. If we get another change
     // in those three seconds, reset that timer to avoid excess saves.
     $("#saved").text("Saving...")
-    //console.log("setTimeout save_code, 3000")
     saveTimeout = setTimeout(save_code, 3000)
   } else {
     $("#saved").text("All changes saved")
@@ -365,6 +363,7 @@ $(document).ready(function() {
   // ... we use /bin/sh syntax highlighting, the only other at all
   // credible option for such varied output is plain text, which is dull.
   output.getSession().setMode("ace/mode/sh")
+  poll_output()
 
   // Bind all the buttons to do something
   $('#docs').on('click', do_docs)
