@@ -362,6 +362,7 @@ $(document).ready(function() {
   connection.on("ok", function(e) {
     console.log("sharejs connection: ok")
     connected = true
+    online = true
     refresh_saving_message()
   })
 
