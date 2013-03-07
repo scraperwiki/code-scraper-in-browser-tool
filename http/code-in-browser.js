@@ -8,9 +8,9 @@ var status = 'nothing' // currently belief about script execution status: 'runni
 var changing ='' // for starting/stopping states
 var stateShare // various things shared with share.js, including group consideration of the running status
 var saveTimeout // store handle to timeout so can clear it
-var connected = false
+var connected = false // if true, displays in user interface that we are not connected
 
-  // Wire up shared document on the connection
+// Wire up shared document on the connection
 var made_editor_connection = function(error, doc) {
   if (error) {
     console.log("sharing doc error", error)
@@ -32,7 +32,7 @@ var made_editor_connection = function(error, doc) {
   editor.focus()
 }
 
-  // Wire up shared state on the connection
+// Wire up shared state on the connection
 var made_state_connection = function(error, doc) {
   if (error) {
     console.log("sharing state error", error)
@@ -105,10 +105,12 @@ var refresh_saving_message = function() {
   clearTimeout(saveTimeout)
 
   if (!connected) {
-    $("#saved").text("Offline")
+    $("#saved").text("")
+    $("#offline").text("Offline, no connection to sharing server")
     return
   }
 
+  $("#offline").text("")
   if (editorDirty) {
     // Wait three seconds and then save. If we get another change
     // in those three seconds, reset that timer to avoid excess saves.
@@ -253,10 +255,11 @@ var save_code = function(callback) {
 
   console.log("save_code... version", editorShare.version)
   var code = editor.getValue()
+  var sep = ""
   if (code.length == 0 || code.charAt(code.length - 1) != "\n") {
-    code += "\n" // we need a separator \n at the end of the file for the ENDOFSCRAPER heredoc below
+    sep = "\n" // we need a separator \n at the end of the file for the ENDOFSCRAPER heredoc below
   }
-  var cmd = "cat >code/scraper.new.$$ <<ENDOFSCRAPER &&\n" + code + "ENDOFSCRAPER\n"
+  var cmd = "cat >code/scraper.new.$$ <<ENDOFSCRAPER &&\n" + code + sep + "ENDOFSCRAPER\n"
   cmd = cmd + "chmod a+x code/scraper.new.$$ && mv code/scraper.new.$$ code/scraper"
   scraperwiki.exec(cmd, function(text) {
     if (text != "") {
