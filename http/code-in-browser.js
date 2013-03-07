@@ -23,14 +23,28 @@ var made_editor_connection = function(error, doc) {
   editorShare = doc
   editorShare.attach_ace(editor)
 
-  if (editorShare.created) {
-    console.log("first time this document exists on ShareJS server, loading from filesystem")
-    load_code_from_file()
-  } else {
+  // set syntax highlighting a tick later, when we have initial data
+  setTimeout(function() {
+    console.log(editorShare.version, editor.getValue())
     set_editor_mode(editor.getValue())
     editor.moveCursorTo(0, 0)
     editor.focus()
+  }, 1)
+
+  if (editorShare.created) {
+    console.log("first time this editor document exists on ShareJS server, loading from filesystem")
+    load_code_from_file()
   }
+
+  editorShare.on('error', function(error) {
+    console.log("editorShare later error:", error)
+    // if ShareJS server has restarted, we get document missing as an error
+    // just redo everything in this case
+    if (error == "Document does not exist")
+      location.reload()
+    else
+      scraperwiki.alert("Editor sharing error!", error, true)
+  })
 }
 
 // Wire up shared state on the connection
@@ -44,11 +58,20 @@ var made_state_connection = function(error, doc) {
 
   stateShare = doc
   if (stateShare.created) {
-    console.log("first time this state connection has been used, initialising")
+    console.log("first time this state document exists on ShareJS server, initialising with 'nothing'")
     stateShare.submitOp([{p:[],od:null,oi:{status:'nothing'}}])
   }
   stateShare.on('change', function (op) {
     shared_state_update(op)
+  })
+  stateShare.on('error', function (error) {
+    console.log("stateShare later error:", error)
+    // if ShareJS server has restarted, we get document missing as an error
+    // just redo everything in this case
+    if (error == "Document does not exist")
+      location.reload()
+    else
+      scraperwiki.alert("State sharing error!", error, true)
   })
 }
 
