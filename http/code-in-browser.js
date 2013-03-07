@@ -8,7 +8,8 @@ var status = 'nothing' // currently belief about script execution status: 'runni
 var changing ='' // for starting/stopping states
 var stateShare // various things shared with share.js, including group consideration of the running status
 var saveTimeout // store handle to timeout so can clear it
-var connected = false // if true, displays in user interface that we are not connected
+var connected = false // whether sharejs is connected
+var online = true // whether browser is online
 
 // Wire up shared document on the connection
 var made_editor_connection = function(error, doc) {
@@ -61,6 +62,7 @@ var load_code_from_file = function() {
       return
     }
     data = data.replace("swinternalGOTCODEOFSCRAPER", "")
+    online = true
 
     // If nothing there, set some default content to get people going
     if (data.match(/^\s*$/)) {
@@ -86,7 +88,7 @@ var handle_exec_error = function(jqXHR, textStatus, errorThrown) {
       // we only want to show if the browser is disconneted from the network.
       setTimeout(function() {
         clear_alerts()
-        connected = false
+        online = false
         refresh_saving_message()
       } , 500)
     } else {
@@ -104,9 +106,14 @@ var update_dirty = function(value) {
 var refresh_saving_message = function() {
   clearTimeout(saveTimeout)
 
+  if (!online) {
+    $("#saved").text("")
+    $("#offline").text("Offline, not connected to the Internet")
+    return
+  }
   if (!connected) {
     $("#saved").text("")
-    $("#offline").text("Offline, no connection to sharing server")
+    $("#offline").text("Offline, can't connect to the sharing server")
     return
   }
 
@@ -196,7 +203,7 @@ var update_display_from_status = function(use_status) {
 
 // Show/hide things according to current state
 var set_status = function(new_status) {
-  if (!connected || !stateShare) {
+  if (!online || !connected || !stateShare) {
     return
   }
 
@@ -219,6 +226,7 @@ var enrunerate_and_poll_output = function(command) {
 
   scraperwiki.exec("./tool/enrunerate " + command, function(text) {
     console.log("enrunerate:", text)
+    online = true
     set_status(text)
 
     // we poll one last time either way to be sure we get end of output...
@@ -268,6 +276,7 @@ var save_code = function(callback) {
         scraperwiki.alert("Trouble saving code!", text, true)
         return
     }
+    online = true
 
     // Check actual content against saved - in case there was a change while we executed
     if (editor.getValue() == code) {
@@ -343,19 +352,17 @@ $(document).ready(function() {
 
   // Initialise the ShareJS connections - it will automaticaly reuse the connection
   console.log("connecting...")
-  connection = sharejs.open('scraperwiki-' + scraperwiki.box + '-doc017', 'text', 'http://seagrass.goatchurch.org.uk/sharejs/channel', made_editor_connection)
-  sharejs.open('scraperwiki-' + scraperwiki.box + '-state017', 'json', 'http://seagrass.goatchurch.org.uk/sharejs/channel', made_state_connection)
+  connection = sharejs.open('scraperwiki-' + scraperwiki.box + '-doc018', 'text', 'http://seagrass.goatchurch.org.uk/sharejs/channel', made_editor_connection)
+  sharejs.open('scraperwiki-' + scraperwiki.box + '-state018', 'json', 'http://seagrass.goatchurch.org.uk/sharejs/channel', made_state_connection)
   connection.on("error", function(e) {
-      console.log("sharejs connection: error")
-      clear_alerts()
-      connected = false
-      refresh_saving_message()
+    console.log("sharejs connection: error")
+    connected = false
+    refresh_saving_message()
   })
   connection.on("ok", function(e) {
-      console.log("sharejs connection: ok")
-      clear_alerts()
-      connected = true
-      refresh_saving_message()
+    console.log("sharejs connection: ok")
+    connected = true
+    refresh_saving_message()
   })
 
   // Create the console output window
