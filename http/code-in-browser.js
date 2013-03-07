@@ -27,6 +27,8 @@ var made_editor_connection = function(error, doc) {
     load_code_from_file()
   } else {
     set_editor_mode(editor.getValue())
+    editor.moveCursorTo(0, 0)
+    editor.focus()
   }
 }
 
@@ -350,8 +352,8 @@ $(document).ready(function() {
 
   // Initialise the ShareJS connections - it will automaticaly reuse the connection
   console.log("connecting...")
-  connection = sharejs.open('scraperwiki-' + scraperwiki.box + '-doc013', 'text', 'http://seagrass.goatchurch.org.uk/sharejs/channel', made_editor_connection)
-  sharejs.open('scraperwiki-' + scraperwiki.box + '-state013', 'json', 'http://seagrass.goatchurch.org.uk/sharejs/channel', made_state_connection)
+  connection = sharejs.open('scraperwiki-' + scraperwiki.box + '-doc017', 'text', 'http://seagrass.goatchurch.org.uk/sharejs/channel', made_editor_connection)
+  sharejs.open('scraperwiki-' + scraperwiki.box + '-state017', 'json', 'http://seagrass.goatchurch.org.uk/sharejs/channel', made_state_connection)
   connection.on("error", function(e) {
       console.log("sharejs connection: error")
       clear_alerts()
