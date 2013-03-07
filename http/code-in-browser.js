@@ -8,8 +8,8 @@ var status = 'nothing' // currently belief about script execution status: 'runni
 var changing ='' // for starting/stopping states
 var stateShare // various things shared with share.js, including group consideration of the running status
 var saveTimeout // store handle to timeout so can clear it
-var connected = false // whether sharejs is connected
-var online = true // whether browser is online
+var connected = false // whether sharejs is connected - measured by sharejs
+var online = true // whether browser is online - measured by errors from calling exec endpoint
 
 // Wire up shared document on the connection
 var made_editor_connection = function(error, doc) {
