@@ -28,8 +28,6 @@ var made_editor_connection = function(error, doc) {
   } else {
     set_editor_mode(editor.getValue())
   }
-  editor.moveCursorTo(0, 0)
-  editor.focus()
 }
 
 // Wire up shared state on the connection
