@@ -171,7 +171,7 @@ var shared_state_update = function(op) {
   if (new_status != status) {
     console.log("status change", status, "===>", new_status)
     if (new_status == "running") {
-      poll_output()
+      enrunerate_and_poll_output()
     }
     status = new_status
     changing = ""
@@ -213,9 +213,11 @@ var set_status = function(new_status) {
   }
 }
 
-// Console get more output
-var poll_output = function() {
-  scraperwiki.exec("./tool/enrunerate", function(text) {
+// Check status of running script, and get more output as appropriate
+var enrunerate_and_poll_output = function(command) {
+  command = command || ""
+
+  scraperwiki.exec("./tool/enrunerate " + command, function(text) {
     console.log("enrunerate:", text)
     set_status(text)
 
@@ -232,7 +234,7 @@ var poll_output = function() {
       }
       output.clearSelection()
       if (again) {
-        setTimeout(poll_output, 10)
+        setTimeout(enrunerate_and_poll_output, 10)
       }
     }, handle_exec_error)
   }, handle_exec_error)
@@ -311,29 +313,18 @@ var do_run = function() {
     // make button show what we're doing
     changing = "stopping"
     update_display_from_status(status)
-
-    scraperwiki.exec("./tool/enrunerate stop", function(text) {
-      console.log("enrunerate stop:", text)
-      // And tell all clients that we're now not running code (if we're not!)
-      set_status(text)
-    }, handle_exec_error)
+    // stop the running code
+    enrunerate_and_poll_output("stop")
     return
   }
 
-  // to make button feel responsibe, temporarily show the wrong status
-  // (until next operation makes it right)
+  // make button show what we're doing
   changing = "starting"
   update_display_from_status(status)
   output.setValue("")
-
-  // Save code
+  // save code and run it
   save_code(function (text) {
-    // Then run it
-    scraperwiki.exec("./tool/enrunerate run", function(text) {
-      console.log("enrunerate run:", text)
-      // And tell all clients that we're now running code (if we are!)
-      set_status(text)
-    }, handle_exec_error)
+    enrunerate_and_poll_output("run")
   })
 }
 
@@ -373,7 +364,7 @@ $(document).ready(function() {
   // ... we use /bin/sh syntax highlighting, the only other at all
   // credible option for such varied output is plain text, which is dull.
   output.getSession().setMode("ace/mode/sh")
-  poll_output()
+  enrunerate_and_poll_output()
 
   // Bind all the buttons to do something
   $('#docs').on('click', do_docs)
