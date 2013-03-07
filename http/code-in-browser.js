@@ -244,10 +244,14 @@ var set_status = function(new_status) {
 }
 
 // Check status of running script, and get more output as appropriate
-var enrunerate_and_poll_output = function(command) {
-  command = command || ""
+var enrunerate_and_poll_output = function(action) {
+  action = action || ""
+  command = "./tool/enrunerate " + action
+  if (action == "run") {
+    command = "(export GIT_AUTHOR_NAME='Anonymous'; cd code; git init; git add scraper; git commit -am 'Ran code in browser') >/dev/null; " + command
+  }
 
-  scraperwiki.exec("./tool/enrunerate " + command, function(text) {
+  scraperwiki.exec(command, function(text) {
     console.log("enrunerate:", text)
     online = true
     set_status(text)
