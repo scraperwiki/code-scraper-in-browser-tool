@@ -440,5 +440,6 @@ $(document).ready(function() {
   $('#keys').on('click', do_keys)
   $('#run').on('click', do_run)
   $(document).bind('keydown', 'ctrl+r', do_run)
+  $('[title]').tooltip()
 })
 
