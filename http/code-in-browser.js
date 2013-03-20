@@ -80,24 +80,57 @@ var made_state_connection = function(error, doc) {
 var load_code_from_file = function() {
   console.log("loading...")
   scraperwiki.exec('mkdir -p code && touch code/scraper && cat code/scraper && echo -n swinternalGOTCODEOFSCRAPER', function(data) {
-    if (data.indexOf("swinternalGOTCODEOFSCRAPER") == -1) {
-      scraperwiki.alert("Trouble loading code!", data, true)
-      return
-    }
-    data = data.replace("swinternalGOTCODEOFSCRAPER", "")
-    online = true
+    scraperwiki.sql.meta(function(meta) {
+      if (data.indexOf("swinternalGOTCODEOFSCRAPER") == -1) {
+        scraperwiki.alert("Trouble loading code!", data, true)
+        return
+      }
+      data = data.replace("swinternalGOTCODEOFSCRAPER", "")
+      online = true
 
-    // If nothing there, set some default content to get people going
-    if (data.match(/^\s*$/)) {
-      data = "#!/usr/bin/python\n\nimport scraperwiki\n\n"
-    }
-    console.log("...loaded")
+      // If nothing there, set some default content to get people going
+      if (data.match(/^\s*$/)) {
+        data = "#!/usr/bin/python\n" + 
+               "\n" + 
+               "import scraperwiki\n" + 
+               "\n" + 
+               "# scraperwiki.sqlite.save([unique keys], { data })"
+        settings = scraperwiki.readSettings()
+        console.log(settings)
+        // If we've been added as a view
+        if (settings.target) {
+          var sql_url = "" + settings.target.url + "/sql/"
+          console.log("sql_url", sql_url)
+          tables = _.keys(meta.table)
+          table = "unknown"
+          if (tables.length > 0)
+            table = tables[0]
+          data =  "#!/usr/bin/python\n"+
+                  "\n"+
+                  "import scraperwiki\n" +
+                  "import requests\n" +
+                  "import json\n" +
+                  "\n" +
+                  "# Query the database this view is attached to \n" +
+                  "sql_url = '" + sql_url + "'\n" +
+                  "query = 'select * from " + table + " limit 10'\n" +
+                  "response = requests.get(sql_url, params = { 'q': query })\n" +
+                  "response.raise_for_status()\n" + 
+                  "\n" +
+                  "# Loop through the response\n" +
+                  "rows = json.loads(response.text)\n" +
+                  "for row in rows:\n" +
+                  "    print row\n"
+        }
+      }
+      console.log("...loaded")
 
-    set_editor_mode(data)
-    editor.setValue(data) // XXX this overrides what is in filesystem on top of what is in sharejs
-    editor.moveCursorTo(0, 0)
-    editor.focus()
-    update_dirty(false)
+      set_editor_mode(data)
+      editor.setValue(data) // XXX this overrides what is in filesystem on top of what is in sharejs
+      editor.moveCursorTo(0, 0)
+      editor.focus()
+      update_dirty(false)
+    }, handle_exec_error)
   }, handle_exec_error)
 }
 
@@ -379,8 +412,8 @@ $(document).ready(function() {
 
   // Initialise the ShareJS connections - it will automaticaly reuse the connection
   console.log("connecting...")
-  connection = sharejs.open('scraperwiki-' + scraperwiki.box + '-doc018', 'text', 'http://seagrass.goatchurch.org.uk/sharejs/channel', made_editor_connection)
-  sharejs.open('scraperwiki-' + scraperwiki.box + '-state018', 'json', 'http://seagrass.goatchurch.org.uk/sharejs/channel', made_state_connection)
+  connection = sharejs.open('scraperwiki-' + scraperwiki.box + '-doc027', 'text', 'http://seagrass.goatchurch.org.uk/sharejs/channel', made_editor_connection)
+  sharejs.open('scraperwiki-' + scraperwiki.box + '-state027', 'json', 'http://seagrass.goatchurch.org.uk/sharejs/channel', made_state_connection)
   connection.on("error", function(e) {
     console.log("sharejs connection: error")
     connected = false
