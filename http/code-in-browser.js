@@ -439,7 +439,13 @@ $(document).ready(function() {
   $('#bugs').on('click', do_bugs)
   $('#keys').on('click', do_keys)
   $('#run').on('click', do_run)
-  $(document).bind('keydown', 'ctrl+r', do_run)
   $('[title]').tooltip()
+
+  $(document).on('keydown', function(e){
+    // the keycode for "r" is 82
+    if(e.ctrlKey && e.which==82) {
+      do_run()
+    }
+  })
 })
 
