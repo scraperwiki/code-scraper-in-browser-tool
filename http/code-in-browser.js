@@ -442,9 +442,10 @@ $(document).ready(function() {
   $('[title]').tooltip()
 
   $(document).on('keydown', function(e){
-    // the keycode for "r" is 82
-    if(e.ctrlKey && e.which==82) {
+    // the keycode for "enter" is 13
+    if((e.ctrlKey || e.metaKey) && e.which==13) {
       do_run()
+      e.preventDefault()
     }
   })
 })
