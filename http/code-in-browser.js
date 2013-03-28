@@ -94,7 +94,7 @@ var load_code_from_file = function() {
                "\n" + 
                "import scraperwiki\n" + 
                "\n" + 
-               "# scraperwiki.sqlite.save([unique keys], { data })"
+               "# scraperwiki.sql.save([unique keys], { data })"
         settings = scraperwiki.readSettings()
         console.log(settings)
         // If we've been added as a view
