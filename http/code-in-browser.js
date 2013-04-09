@@ -25,7 +25,7 @@ var made_editor_connection = function(error, doc) {
 
   // set syntax highlighting a tick later, when we have initial data
   setTimeout(function() {
-    console.log(editorShare.version, editor.getValue())
+    //console.log('editor version', editorShare.version, editor.getValue())
     set_editor_mode(editor.getValue())
     editor.moveCursorTo(0, 0)
     editor.focus()
@@ -96,7 +96,7 @@ var load_code_from_file = function() {
                "\n" + 
                "# scraperwiki.sql.save([unique keys], { data })"
         settings = scraperwiki.readSettings()
-        console.log(settings)
+        //console.log(settings)
         // If we've been added as a view
         if (settings.target) {
           var sql_url = "" + settings.target.url + "/sql/"
