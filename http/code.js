@@ -207,6 +207,8 @@ var set_editor_mode = function(code) {
     editor.getSession().setMode("ace/mode/ruby")
   } else if (first.indexOf("perl") != -1) {
     editor.getSession().setMode("ace/mode/perl")
+  } else if (first.indexOf("php") != -1) {
+    editor.getSession().setMode("ace/mode/php")
   } else if (first.indexOf("node") != -1) {
     editor.getSession().setMode("ace/mode/javascript")
   } else if (first.indexOf("coffee") != -1) {
