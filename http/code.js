@@ -331,7 +331,7 @@ var save_code = function(callback) {
   if (code.length == 0 || code.charAt(code.length - 1) != "\n") {
     sep = "\n" // we need a separator \n at the end of the file for the ENDOFSCRAPER heredoc below
   }
-  var cmd = "cat >code/scraper.new.$$ <<ENDOFSCRAPER &&\n" + code + sep + "ENDOFSCRAPER\n"
+  var cmd = "cat >code/scraper.new.$$ <<\"ENDOFSCRAPER\" &&\n" + code + sep + "ENDOFSCRAPER\n"
   cmd = cmd + "chmod a+x code/scraper.new.$$ && mv code/scraper.new.$$ code/scraper"
   scraperwiki.exec(cmd, function(text) {
     if (text != "") {
