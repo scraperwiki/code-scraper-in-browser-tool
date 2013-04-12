@@ -11,6 +11,11 @@ var saveTimeout // store handle to timeout so can clear it
 var connected = false // whether sharejs is connected - measured by sharejs
 var online = true // whether browser is online - measured by errors from calling exec endpoint
 
+// This is an arbitary number we tack onto the end of the document id in ShareJS.
+// Incrementing it forces the code in the browser tool to use a new ShareJS
+// document (and recover the data from the code/scraper file to initialise it)
+var shareJSCode = '027'
+
 // Wire up shared document on the connection
 var made_editor_connection = function(error, doc) {
   if (error) {
@@ -414,8 +419,8 @@ $(document).ready(function() {
 
   // Initialise the ShareJS connections - it will automaticaly reuse the connection
   console.log("connecting...")
-  connection = sharejs.open('scraperwiki-' + scraperwiki.box + '-doc027', 'text', 'http://seagrass.goatchurch.org.uk/sharejs/channel', made_editor_connection)
-  sharejs.open('scraperwiki-' + scraperwiki.box + '-state027', 'json', 'http://seagrass.goatchurch.org.uk/sharejs/channel', made_state_connection)
+  connection = sharejs.open('scraperwiki-' + scraperwiki.box + '-doc' + shareJSCode, 'text', 'http://seagrass.goatchurch.org.uk/sharejs/channel', made_editor_connection)
+  sharejs.open('scraperwiki-' + scraperwiki.box + '-state' + shareJSCode, 'json', 'http://seagrass.goatchurch.org.uk/sharejs/channel', made_state_connection)
   connection.on("error", function(e) {
     console.log("sharejs connection: error")
     connected = false
