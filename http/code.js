@@ -259,13 +259,13 @@ var shared_state_update = function(op) {
 // Show status in buttons - we have this as we can call it directly
 // to make the run button seem more responsive
 var update_display_from_status = function(use_status) {
-  $("#run").removeClass("btn-primary").removeClass("btn-danger").removeClass("btn-warning").removeClass("btn-success")
+  $("#run").removeClass("btn-primary").removeClass("btn-danger").removeClass("btn-warning").removeClass("btn-success").removeClass('loading')
   if (changing == "starting") {
-    $("#run").text("Starting...").addClass("btn-warning")
+    $("#run").text("Starting...").addClass("btn-warning").addClass('loading')
   } else if (changing == "stopping") {
-    $("#run").text("Stopping...").addClass("btn-danger")
+    $("#run").text("Stopping...").addClass("btn-danger").addClass('loading')
   } else if (use_status == "running") {
-    $("#run").text("Running...").addClass("btn-success")
+    $("#run").text("Running...").addClass("btn-success").addClass('loading')
   } else if (use_status == "nothing") {
     $("#run").text("Run!").addClass("btn-primary")
   }
