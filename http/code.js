@@ -1,5 +1,6 @@
 // Source code repository: https://github.com/frabcus/code-scraper-in-browser-tool/
 
+var settings
 var editor
 var editorDirty = false
 var editorShare
@@ -130,7 +131,6 @@ var load_code_from_file = function() {
                "import scraperwiki\n" + 
                "\n" + 
                "# scraperwiki.sql.save([unique keys], { data })"
-        settings = scraperwiki.readSettings()
         //console.log(settings)
         // If we've been added as a view - XXX experimental, to try code in
         // browser for writing code that generates static views
@@ -439,7 +439,6 @@ var do_run = function() {
 // Main entry point
 $(document).ready(function() {
   settings = scraperwiki.readSettings()
-  $('#apikey').val(settings.source.apikey)
 
   // Create editor window, read only until it is ready
   editor = ace.edit("editor")
@@ -453,8 +452,10 @@ $(document).ready(function() {
 
   // Initialise the ShareJS connections - it will automaticaly reuse the connection
   console.log("connecting...")
-  connection = sharejs.open('scraperwiki-' + scraperwiki.box + '-doc' + shareJSCode, 'text', 'http://seagrass.goatchurch.org.uk/sharejs/channel', made_editor_connection)
-  sharejs.open('scraperwiki-' + scraperwiki.box + '-state' + shareJSCode, 'json', 'http://seagrass.goatchurch.org.uk/sharejs/channel', made_state_connection)
+  // ... for now we use the publish token. We should use the API key, when it is per dataset not per user.
+  var access_token = settings.source.publishToken
+  connection = sharejs.open('scraperwiki-' + scraperwiki.box + '-' + access_token + '-doc' + shareJSCode, 'text', 'http://seagrass.goatchurch.org.uk/sharejs/channel', made_editor_connection)
+  sharejs.open('scraperwiki-' + scraperwiki.box + '-' + access_token + '-state' + shareJSCode, 'json', 'http://seagrass.goatchurch.org.uk/sharejs/channel', made_state_connection)
   connection.on("error", function(e) {
     console.log("sharejs connection: error")
     connected = false
