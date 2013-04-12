@@ -15,7 +15,22 @@ var online = true // whether browser is online - measured by errors from calling
 // This is an arbitary number we tack onto the end of the document id in ShareJS.
 // Incrementing it forces the code in the browser tool to use a new ShareJS
 // document (and recover the data from the code/scraper file to initialise it)
-var shareJSCode = '034'
+var shareJSCode = '038'
+
+
+// Called when we either load from the box filesystem, or get data from 
+//ShareJS, upon first loading of the page
+var done_initial_load = function() {
+  // set syntax highlighting a tick later, when we have initial data
+  setTimeout(function() {
+    //console.log('editor version', editorShare.version, editor.getValue())
+    set_editor_mode(editor.getValue())
+    editor.setReadOnly(false)
+    editor.moveCursorTo(0, 0)
+    editor.focus()
+    editorSpinner.stop()
+  }, 1)
+}
 
 // Wire up shared document on the connection
 var made_editor_connection = function(error, doc) {
@@ -29,20 +44,11 @@ var made_editor_connection = function(error, doc) {
   editorShare = doc
   editorShare.attach_ace(editor)
 
-  // set syntax highlighting a tick later, when we have initial data
-  setTimeout(function() {
-    //console.log('editor version', editorShare.version, editor.getValue())
-    set_editor_mode(editor.getValue())
-    editor.moveCursorTo(0, 0)
-    editor.focus()
-  }, 1)
-
   if (editorShare.created) {
     console.log("first time this editor document exists on ShareJS server, loading from filesystem")
     load_code_from_file()
   } else {
-    editor.setReadOnly(false)
-    editorSpinner.stop()
+    done_initial_load()
   }
 
   editorShare.on('error', function(error) {
@@ -137,11 +143,8 @@ var load_code_from_file = function() {
       clear_alerts()
       set_editor_mode(data)
       editor.setValue(data) // XXX this overrides what is in filesystem on top of what is in sharejs
-      editor.moveCursorTo(0, 0)
-      editor.focus()
       update_dirty(false)
-      editor.setReadOnly(false)
-      editorSpinner.stop()
+      done_initial_load()
     }, handle_exec_error)
   }, handle_exec_error)
 }
