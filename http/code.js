@@ -14,7 +14,7 @@ var online = true // whether browser is online - measured by errors from calling
 // This is an arbitary number we tack onto the end of the document id in ShareJS.
 // Incrementing it forces the code in the browser tool to use a new ShareJS
 // document (and recover the data from the code/scraper file to initialise it)
-var shareJSCode = '029'
+var shareJSCode = '032'
 
 // Wire up shared document on the connection
 var made_editor_connection = function(error, doc) {
@@ -203,7 +203,13 @@ $(window).on('beforeunload', function() {
 var set_editor_mode = function(code) {
   var first = code.split("\n")[0]
   if (first.substr(0,2) != "#!") {
-    scraperwiki.alert("Specify language in the first line!", "For example, put <code>#!/usr/bin/ruby</code>, <code>#!/usr/bin/Rscript</code> or <code>#!/usr/bin/python</code>.", false)
+    scraperwiki.alert("Specify language in the first line!", "For example, put <code class='inserterHit'>#!/usr/bin/node</code>, <code class='inserterHit'>#!/usr/bin/Rscript</code> or <code class='inserterHit'>#!/usr/bin/python</code>.", false)
+    $('.inserterHit').click(function() {
+      var line = $(this).text() + "\n\n"
+      editor.moveCursorTo(0,0)
+      editor.insert(line)
+      editor.focus()
+    })
     return false
   }
   // Please add more as you need them and send us a pull request!

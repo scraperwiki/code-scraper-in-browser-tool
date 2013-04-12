@@ -28,3 +28,12 @@ html {
     margin-left: 5px;
     margin-right: 5px;
 }
+
+.inserterHit {
+  cursor: pointer;
+}
+
+.inserterHit:hover {
+  text-decoration: underline;
+}
+
