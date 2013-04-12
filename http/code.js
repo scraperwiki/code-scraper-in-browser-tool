@@ -5,6 +5,7 @@ var editorDirty = false
 var editorShare
 var editorSpinner
 var output
+var outputSpinner
 var status = 'nothing' // currently belief about script execution status: 'running' or 'nothing'
 var changing ='' // for starting/stopping states
 var stateShare // various things shared with share.js, including group consideration of the running status
@@ -15,8 +16,27 @@ var online = true // whether browser is online - measured by errors from calling
 // This is an arbitary number we tack onto the end of the document id in ShareJS.
 // Incrementing it forces the code in the browser tool to use a new ShareJS
 // document (and recover the data from the code/scraper file to initialise it)
-var shareJSCode = '039'
+var shareJSCode = '040'
 
+// Spinner options
+var spinnerOpts = {
+  lines: 12, // The number of lines to draw
+  length: 7, // The length of each line
+  width: 4, // The line thickness
+  radius: 10, // The radius of the inner circle
+  corners: 1, // Corner roundness (0..1)
+  rotate: 0, // The rotation offset
+  direction: 1, // 1: clockwise, -1: counterclockwise
+  color: '#fff', // #rgb or #rrggbb
+  speed: 1, // Rounds per second
+  trail: 60, // Afterglow percentage
+  shadow: false, // Whether to render a shadow
+  hwaccel: false, // Whether to use hardware acceleration
+  className: 'spinner', // The CSS class to assign to the spinner
+  zIndex: 2e9, // The z-index (defaults to 2000000000)
+  top: 'auto', // Top position relative to parent in px
+  left: 'auto' // Left position relative to parent in px
+};
 
 // Called when we either load from the box filesystem, or get data from 
 //ShareJS, upon first loading of the page
@@ -323,6 +343,7 @@ var enrunerate_and_poll_output = function(action) {
       // XXX detect no file a better way
       if (text != "cat: logs/out: No such file or directory\n") {
         output.setValue(text)
+        outputSpinner.stop()
       }
       output.clearSelection()
       if (again) {
@@ -438,25 +459,7 @@ $(document).ready(function() {
     update_dirty(true)
   })
   editor.setReadOnly(true)
-  var opts = {
-    lines: 13, // The number of lines to draw
-    length: 20, // The length of each line
-    width: 10, // The line thickness
-    radius: 30, // The radius of the inner circle
-    corners: 1, // Corner roundness (0..1)
-    rotate: 0, // The rotation offset
-    direction: 1, // 1: clockwise, -1: counterclockwise
-    color: '#fff', // #rgb or #rrggbb
-    speed: 1, // Rounds per second
-    trail: 60, // Afterglow percentage
-    shadow: false, // Whether to render a shadow
-    hwaccel: false, // Whether to use hardware acceleration
-    className: 'spinner', // The CSS class to assign to the spinner
-    zIndex: 2e9, // The z-index (defaults to 2000000000)
-    top: 'auto', // Top position relative to parent in px
-    left: 'auto' // Left position relative to parent in px
-  };
-  editorSpinner = new Spinner(opts).spin($('#editor')[0])
+  editorSpinner = new Spinner(spinnerOpts).spin($('#editor')[0])
 
   // Initialise the ShareJS connections - it will automaticaly reuse the connection
   console.log("connecting...")
@@ -480,6 +483,7 @@ $(document).ready(function() {
   // ... we use /bin/sh syntax highlighting, the only other at all
   // credible option for such varied output is plain text, which is dull.
   output.getSession().setMode("ace/mode/sh")
+  outputSpinner = new Spinner(spinnerOpts).spin($('#output')[0])
   enrunerate_and_poll_output()
 
   // Bind all the buttons to do something
