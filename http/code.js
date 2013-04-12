@@ -14,7 +14,7 @@ var online = true // whether browser is online - measured by errors from calling
 // This is an arbitary number we tack onto the end of the document id in ShareJS.
 // Incrementing it forces the code in the browser tool to use a new ShareJS
 // document (and recover the data from the code/scraper file to initialise it)
-var shareJSCode = '027'
+var shareJSCode = '029'
 
 // Wire up shared document on the connection
 var made_editor_connection = function(error, doc) {
@@ -130,6 +130,7 @@ var load_code_from_file = function() {
       }
       console.log("...loaded")
 
+      clear_alerts()
       set_editor_mode(data)
       editor.setValue(data) // XXX this overrides what is in filesystem on top of what is in sharejs
       editor.moveCursorTo(0, 0)
