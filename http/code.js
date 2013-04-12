@@ -416,9 +416,13 @@ var do_run = function() {
   update_display_from_status(status)
   output.setValue("")
   // save code and run it
-  save_code(function (text) {
+  if (editorDirty) {
+    save_code(function (text) {
+      enrunerate_and_poll_output("run")
+    })
+  } else {
     enrunerate_and_poll_output("run")
-  })
+  }
 }
 
 // Main entry point
