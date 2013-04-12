@@ -398,19 +398,9 @@ var save_code = function(callback) {
   }, handle_exec_error)
 }
 
-// When the "documentation" button is pressed
-var do_docs = function() {
-  window.open("https://scraperwiki.com/docs/", "_blank")
-}
-
 // When the "bugs" button is pressed
 var do_bugs = function() {
   window.open("https://github.com/frabcus/code-scraper-in-browser-tool/issues", "_blank")
-}
-
-// When the "keys" button is pressed
-var do_keys = function() {
-  window.open("https://github.com/ajaxorg/ace/wiki/Default-Keyboard-Shortcuts", "_blank")
 }
 
 // When the "run" button is pressed
@@ -487,9 +477,7 @@ $(document).ready(function() {
   enrunerate_and_poll_output()
 
   // Bind all the buttons to do something
-  $('#docs').on('click', do_docs)
   $('#bugs').on('click', do_bugs)
-  $('#keys').on('click', do_keys)
   $('#run').on('click', do_run)
   $('[title]').tooltip()
 

@@ -35,8 +35,24 @@
     <span class="text-error" id="offline"></span>
     <div id="rightbar">
       <button class="btn btn-danger" type="button" id="bugs">Report Bug</button>
-      <button class="btn btn-inverse" type="button" id="keys">Editor Keys</button>
-      <button class="btn btn-info" type="button" id="docs">Scraping Docs</button>
+
+      <div class="btn-group dropup" id="help">
+        <a class="btn btn-info dropdown-toggle" data-toggle="dropdown" href="#">Help <span class="caret"></span></a>
+        <ul class="dropdown-menu pull-right">
+          <li><a href="https://scraperwiki.com/docs/" target="_blank">Scraping tutorials and docs</a></li>
+          <!-- <li class="dropdown-submenu">
+            <a tabindex="-1" href="#">Example queries&hellip;</a>
+            <ul class="dropdown-menu">
+               <li class="disabled"><a tabindex="-1" href="#"><span class="label label-warning">Warning!</span> Replaces your current query:</a></li>
+               <li><a onClick="use_default_query();">Basic example</a></li>
+               <li><a onClick="use_group_query();">Grouping example</a></li>
+            </ul>
+          </li> -->
+          <li class="divider"></li>
+          <li><a href="https://github.com/ajaxorg/ace/wiki/Default-Keyboard-Shortcuts" target="_blank">Editor keyboard shortcuts</a></li>
+         </ul>
+      </div>
+
     </div>
   </form>
 
