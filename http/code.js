@@ -15,7 +15,7 @@ var online = true // whether browser is online - measured by errors from calling
 // This is an arbitary number we tack onto the end of the document id in ShareJS.
 // Incrementing it forces the code in the browser tool to use a new ShareJS
 // document (and recover the data from the code/scraper file to initialise it)
-var shareJSCode = '033'
+var shareJSCode = '034'
 
 // Wire up shared document on the connection
 var made_editor_connection = function(error, doc) {
@@ -41,6 +41,7 @@ var made_editor_connection = function(error, doc) {
     console.log("first time this editor document exists on ShareJS server, loading from filesystem")
     load_code_from_file()
   } else {
+    editor.setReadOnly(false)
     editorSpinner.stop()
   }
 
@@ -139,6 +140,7 @@ var load_code_from_file = function() {
       editor.moveCursorTo(0, 0)
       editor.focus()
       update_dirty(false)
+      editor.setReadOnly(false)
       editorSpinner.stop()
     }, handle_exec_error)
   }, handle_exec_error)
@@ -427,6 +429,7 @@ $(document).ready(function() {
   editor.on('change', function() {
     update_dirty(true)
   })
+  editor.setReadOnly(true)
   var opts = {
     lines: 13, // The number of lines to draw
     length: 20, // The length of each line
