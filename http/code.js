@@ -15,7 +15,7 @@ var online = true // whether browser is online - measured by errors from calling
 // This is an arbitary number we tack onto the end of the document id in ShareJS.
 // Incrementing it forces the code in the browser tool to use a new ShareJS
 // document (and recover the data from the code/scraper file to initialise it)
-var shareJSCode = '038'
+var shareJSCode = '039'
 
 
 // Called when we either load from the box filesystem, or get data from 
@@ -95,7 +95,7 @@ var made_state_connection = function(error, doc) {
 var load_code_from_file = function() {
   console.log("loading...")
   scraperwiki.exec('mkdir -p code && touch code/scraper && cat code/scraper && echo -n swinternalGOTCODEOFSCRAPER', function(data) {
-    scraperwiki.sql.meta(function(meta) {
+    // scraperwiki.sql.meta(function(meta) {
       if (data.indexOf("swinternalGOTCODEOFSCRAPER") == -1) {
         scraperwiki.alert("Trouble loading code!", data, true)
         return
@@ -112,8 +112,9 @@ var load_code_from_file = function() {
                "# scraperwiki.sql.save([unique keys], { data })"
         settings = scraperwiki.readSettings()
         //console.log(settings)
-        // If we've been added as a view
-        if (settings.target) {
+        // If we've been added as a view - XXX experimental, to try code in
+        // browser for writing code that generates static views
+        /* if (settings.target) {
           var sql_url = "" + settings.target.url + "/sql/"
           console.log("sql_url", sql_url)
           tables = _.keys(meta.table)
@@ -136,7 +137,7 @@ var load_code_from_file = function() {
                   "rows = json.loads(response.text)\n" +
                   "for row in rows:\n" +
                   "    print row\n"
-        }
+        } */
       }
       console.log("...loaded")
 
@@ -145,7 +146,7 @@ var load_code_from_file = function() {
       editor.setValue(data) // XXX this overrides what is in filesystem on top of what is in sharejs
       update_dirty(false)
       done_initial_load()
-    }, handle_exec_error)
+    // }, handle_exec_error)
   }, handle_exec_error)
 }
 
