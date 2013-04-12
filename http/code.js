@@ -3,6 +3,7 @@
 var editor
 var editorDirty = false
 var editorShare
+var editorSpinner
 var output
 var status = 'nothing' // currently belief about script execution status: 'running' or 'nothing'
 var changing ='' // for starting/stopping states
@@ -14,7 +15,7 @@ var online = true // whether browser is online - measured by errors from calling
 // This is an arbitary number we tack onto the end of the document id in ShareJS.
 // Incrementing it forces the code in the browser tool to use a new ShareJS
 // document (and recover the data from the code/scraper file to initialise it)
-var shareJSCode = '032'
+var shareJSCode = '033'
 
 // Wire up shared document on the connection
 var made_editor_connection = function(error, doc) {
@@ -39,6 +40,8 @@ var made_editor_connection = function(error, doc) {
   if (editorShare.created) {
     console.log("first time this editor document exists on ShareJS server, loading from filesystem")
     load_code_from_file()
+  } else {
+    editorSpinner.stop()
   }
 
   editorShare.on('error', function(error) {
@@ -136,6 +139,7 @@ var load_code_from_file = function() {
       editor.moveCursorTo(0, 0)
       editor.focus()
       update_dirty(false)
+      editorSpinner.stop()
     }, handle_exec_error)
   }, handle_exec_error)
 }
@@ -423,6 +427,25 @@ $(document).ready(function() {
   editor.on('change', function() {
     update_dirty(true)
   })
+  var opts = {
+    lines: 13, // The number of lines to draw
+    length: 20, // The length of each line
+    width: 10, // The line thickness
+    radius: 30, // The radius of the inner circle
+    corners: 1, // Corner roundness (0..1)
+    rotate: 0, // The rotation offset
+    direction: 1, // 1: clockwise, -1: counterclockwise
+    color: '#fff', // #rgb or #rrggbb
+    speed: 1, // Rounds per second
+    trail: 60, // Afterglow percentage
+    shadow: false, // Whether to render a shadow
+    hwaccel: false, // Whether to use hardware acceleration
+    className: 'spinner', // The CSS class to assign to the spinner
+    zIndex: 2e9, // The z-index (defaults to 2000000000)
+    top: 'auto', // Top position relative to parent in px
+    left: 'auto' // Left position relative to parent in px
+  };
+  editorSpinner = new Spinner(opts).spin($('#editor')[0])
 
   // Initialise the ShareJS connections - it will automaticaly reuse the connection
   console.log("connecting...")
