@@ -343,8 +343,8 @@ var enrunerate_and_poll_output = function(action) {
       // XXX detect no file a better way
       if (text != "cat: logs/out: No such file or directory\n") {
         output.setValue(text)
-        outputSpinner.stop()
       }
+      outputSpinner.stop()
       output.clearSelection()
       if (again) {
         setTimeout(enrunerate_and_poll_output, 10)
