@@ -17,7 +17,7 @@ var online = true // whether browser is online - measured by errors from calling
 // This is an arbitary number we tack onto the end of the document id in ShareJS.
 // Incrementing it forces the code in the browser tool to use a new ShareJS
 // document (and recover the data from the code/scraper file to initialise it)
-var shareJSCode = '040'
+var shareJSCode = '046'
 
 // Spinner options
 var spinnerOpts = {
@@ -111,62 +111,53 @@ var made_state_connection = function(error, doc) {
   })
 }
 
+// When a language is selected
+var do_language_picked = function(el) {
+  var picked_lang = el.target.href.split("#")[1]
+  console.log("lang=", picked_lang)
+  data = "#!/usr/bin/env xxx"
+  $.each(languages, function(ix, lang) {
+    if (lang.binary == picked_lang) {
+      data = "#!/usr/bin/env " + lang.binary
+      if (lang.params) {
+        data += " " + lang.params
+      }
+    }
+  })
+  set_loaded_data(data)
+  $('#languagepicker').hide()
+  return false
+}
+
+
+// Called after either loading the code from filesystem, or first time through with new language
+var set_loaded_data = function(data) {
+  clear_alerts()
+  set_editor_mode(data)
+  editor.setValue(data) // XXX this overrides what is in filesystem on top of what is in sharejs
+  update_dirty(false)
+  done_initial_load()
+}
+
 // Used to initialise what is in the ShareJS server from the filesystem the
 // first time run for the instantiation of the ShareJS server.
 var load_code_from_file = function() {
   console.log("loading...")
   scraperwiki.exec('mkdir -p code && touch code/scraper && cat code/scraper && echo -n swinternalGOTCODEOFSCRAPER', function(data) {
-    // scraperwiki.sql.meta(function(meta) {
-      if (data.indexOf("swinternalGOTCODEOFSCRAPER") == -1) {
-        scraperwiki.alert("Trouble loading code!", data, true)
-        return
-      }
-      data = data.replace("swinternalGOTCODEOFSCRAPER", "")
-      online = true
+    if (data.indexOf("swinternalGOTCODEOFSCRAPER") == -1) {
+      scraperwiki.alert("Trouble loading code!", data, true)
+      return
+    }
+    data = data.replace("swinternalGOTCODEOFSCRAPER", "")
+    online = true
 
-      // If nothing there, set some default content to get people going
-      if (data.match(/^\s*$/)) {
-        data = "#!/usr/bin/python\n" + 
-               "\n" + 
-               "import scraperwiki\n" + 
-               "\n" + 
-               "# scraperwiki.sql.save([unique keys], { data })"
-        //console.log(settings)
-        // If we've been added as a view - XXX experimental, to try code in
-        // browser for writing code that generates static views
-        /* if (settings.target) {
-          var sql_url = "" + settings.target.url + "/sql/"
-          console.log("sql_url", sql_url)
-          tables = _.keys(meta.table)
-          table = "unknown"
-          if (tables.length > 0)
-            table = tables[0]
-          data =  "#!/usr/bin/python\n"+
-                  "\n"+
-                  "import scraperwiki\n" +
-                  "import requests\n" +
-                  "import json\n" +
-                  "\n" +
-                  "# Query the database this view is attached to \n" +
-                  "sql_url = '" + sql_url + "'\n" +
-                  "query = 'select * from " + table + " limit 10'\n" +
-                  "response = requests.get(sql_url, params = { 'q': query })\n" +
-                  "response.raise_for_status()\n" + 
-                  "\n" +
-                  "# Loop through the response\n" +
-                  "rows = json.loads(response.text)\n" +
-                  "for row in rows:\n" +
-                  "    print row\n"
-        } */
-      }
+    // If nothing there, set some default content to get people going
+    if (data.match(/^\s*$/)) {
+      $('#languagepicker').show()
+    } else {
       console.log("...loaded")
-
-      clear_alerts()
-      set_editor_mode(data)
-      editor.setValue(data) // XXX this overrides what is in filesystem on top of what is in sharejs
-      update_dirty(false)
-      done_initial_load()
-    // }, handle_exec_error)
+      set_loaded_data(data)
+    }
   }, handle_exec_error)
 }
 
@@ -233,7 +224,7 @@ $(window).on('beforeunload', function() {
 var set_editor_mode = function(code) {
   var first = code.split("\n")[0]
   if (first.substr(0,2) != "#!") {
-    scraperwiki.alert("Specify language in the first line!", "For example, put <code class='inserterHit'>#!/usr/bin/node</code>, <code class='inserterHit'>#!/usr/bin/Rscript</code> or <code class='inserterHit'>#!/usr/bin/python</code>.", false)
+    scraperwiki.alert("Specify language in the first line!", "For example, put <code class='inserterHit'>#!/usr/bin/env node</code>, <code class='inserterHit'>#!/usr/bin/env Rscript</code> or <code class='inserterHit'>#!/usr/bin/env python</code>.", false)
     $('.inserterHit').click(function() {
       var line = $(this).text() + "\n\n"
       editor.moveCursorTo(0,0)
@@ -242,30 +233,16 @@ var set_editor_mode = function(code) {
     })
     return false
   }
+
   // Please add more as you need them and send us a pull request!
-  if (first.indexOf("python") != -1) {
-    editor.getSession().setMode("ace/mode/python")
-  } else if (first.indexOf("ruby") != -1) {
-    editor.getSession().setMode("ace/mode/ruby")
-  } else if (first.indexOf("perl") != -1) {
-    editor.getSession().setMode("ace/mode/perl")
-  } else if (first.indexOf("php") != -1) {
-    editor.getSession().setMode("ace/mode/php")
-  } else if (first.indexOf("node") != -1) {
-    editor.getSession().setMode("ace/mode/javascript")
-  } else if (first.indexOf("coffee") != -1) {
-    editor.getSession().setMode("ace/mode/coffee")
-  } else if (first.indexOf("clojure") != -1) {
-    editor.getSession().setMode("ace/mode/clojure")
-  } else if (first.indexOf("tcc") != -1) {
-    editor.getSession().setMode("ace/mode/c_cpp")
-  } else if (first.indexOf("R") != -1) {
-    editor.getSession().setMode("ace/mode/r")
-  } else if (first.indexOf("sh") != -1) {
-    editor.getSession().setMode("ace/mode/sh")
-  } else {
-    editor.getSession().setMode("ace/mode/text")
-  }
+  editor.getSession().setMode("ace/mode/text")
+  $.each(languages, function(ix, lang) {
+    if (first.indexOf(lang.binary) != -1) {
+      editor.getSession().setMode("ace/mode/" + lang.highlight)
+      return false
+    }
+  })
+
   return true
 }
 
@@ -476,6 +453,12 @@ $(document).ready(function() {
   output.getSession().setMode("ace/mode/sh")
   outputSpinner = new Spinner(spinnerOpts).spin($('#output')[0])
   enrunerate_and_poll_output()
+
+  // Fill in the language picker
+  $.each(languages, function(ix, lang) {
+    $("#languagepicker ul").append('<li><a href="#' + lang.binary + '">' + lang.human + ' <span style="display: none" class="pull-right muted">#! ' + lang.binary + '</span></a></li>')
+  })
+  $('#languagepicker a').on('click', do_language_picked)
 
   // Bind all the buttons to do something
   $('#bugs').on('click', do_bugs)
