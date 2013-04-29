@@ -4,7 +4,7 @@ var languages = [
   { binary: 'tcc', human: 'C', highlight: 'c_cpp' },
   { binary: 'clojure', human: 'Clojure', highlight: 'clojure' },
   { binary: 'coffee', human: 'CoffeeScript', highlight: 'coffee' },
-  { binary: 'node', human: 'Node', highlight: 'javascript' },
+  { binary: 'node', human: 'Node.js', highlight: 'javascript' },
   { binary: 'perl', human: 'Perl', highlight: 'perl' },
   { binary: 'php', human: 'PHP', highlight: 'php' },
   { binary: 'python', human: 'Python', highlight: 'python' },
