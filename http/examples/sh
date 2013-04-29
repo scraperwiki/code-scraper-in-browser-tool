@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+
+# cat <<END | sqlite3 scraperwiki.sqlite
+#   CREATE TABLE IF NOT EXISTS animals (id INTEGER, name TEXT, age INTEGER, PRIMARY KEY (id));
+#   INSERT OR REPLACE INTO animals (id, name, age) values (12, "violet", 7);
+# END
+
+
+
+
+

@@ -1,0 +1,13 @@
+#!/usr/bin/env node
+
+var sqlite3 = require('sqlite3')
+
+// Saving data:
+// var db = new sqlite3.Database('scraperwiki.sqlite')
+// db.serialize(function() {
+//     db.run("CREATE TABLE IF NOT EXISTS animals (id INTEGER, name TEXT, age INTEGER, PRIMARY KEY (id))")
+//     db.run("INSERT OR REPLACE INTO animals (id, name, age) values (?, ?, ?)", 12, "violet", 7)
+// })
+
+
+

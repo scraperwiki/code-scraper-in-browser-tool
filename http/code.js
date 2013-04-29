@@ -123,20 +123,14 @@ var show_language_picker = function(warning) {
 // When a language is selected
 var do_language_picked = function(el) {
   var picked_lang = el.target.href.split("#")[1]
-  console.log("lang=", picked_lang)
-  data = "#!/usr/bin/env xxx"
-  $.each(languages, function(ix, lang) {
-    if (lang.binary == picked_lang) {
-      data = "#!/usr/bin/env " + lang.binary
-      if (lang.params) {
-        data += " " + lang.params
-      }
-    }
-  })
-  set_loaded_data(data)
-  $('#languagepicker').hide()
+  $.get('examples/' + picked_lang, function(data) {
+    set_loaded_data(data)
+    update_dirty(true) // force dirty to save the default file
+    $('#languagepicker').hide()
+  });
   return false
 }
+// When cancel is pressed in language picker
 var do_language_cancelled = function() {
   $('#languagepicker').hide()
   return false
@@ -218,9 +212,9 @@ var refresh_saving_message = function() {
     // Wait three seconds and then save. If we get another change
     // in those three seconds, reset that timer to avoid excess saves.
     saveTimeout = setTimeout(save_code, 3000)
-    //$("#saved").text("Saving...")
+    $("#saved").text("Saving...")
   } else {
-    //$("#saved").text("All changes saved")
+    $("#saved").text("")
   } 
 }
 

@@ -1,0 +1,18 @@
+#!/usr/bin/env php
+<?
+
+/* 
+
+// RedBeanPHP makes the database table for you http://redbeanphp.com/
+require 'rb.php';
+
+R::setup('sqlite:scraperwiki.sqlite');
+$animal = R::dispense('animal');
+$animal->name = 'Violet';
+$animal->age = 7;
+$id = R::store($animal);
+
+*/
+
+?>
+

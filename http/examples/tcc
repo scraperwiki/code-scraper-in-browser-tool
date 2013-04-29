@@ -1,0 +1,8 @@
+#!/usr/bin/tcc -run
+
+#include <stdio.h>
+
+void main () {
+  printf("Hello, world!");
+}
+

@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+require 'scraperwiki'
+
+# Saving data:
+# unique_keys = [ 'id' ]
+# data = { 'id'=>12, 'name'=>'violet', 'age'=> 7 }
+# ScraperWiki.save_sqlite(unique_keys, data)
+
+
+

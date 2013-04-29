@@ -1,0 +1,6 @@
+#!/usr/bin/env clojure
+
+(def hello (fn [] "Hello world"))
+
+(println (hello))
+
