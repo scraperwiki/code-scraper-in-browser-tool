@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+
+import scraperwiki
+import requests
+
+html = requests.get("http://www.flourish.org/blog")
+print html
+
+# Saving data:
+# unique_keys = [ 'id' ]
+# data = { 'id'=>12, 'name'=>'violet', 'age'=> 7 }
+# scraperwiki.sql.save(unique_keys, data)
+
+

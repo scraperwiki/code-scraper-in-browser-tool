@@ -41,16 +41,9 @@
       <div class="btn-group dropup" id="help">
         <a class="btn btn-info dropdown-toggle" data-toggle="dropdown" href="#">Help <span class="caret"></span></a>
         <ul class="dropdown-menu pull-right">
-          <li><a href="https://scraperwiki.com/docs/" target="_blank">Scraping tutorials and docs</a></li>
-          <!-- <li class="dropdown-submenu">
-            <a tabindex="-1" href="#">Example queries&hellip;</a>
-            <ul class="dropdown-menu">
-               <li class="disabled"><a tabindex="-1" href="#"><span class="label label-warning">Warning!</span> Replaces your current query:</a></li>
-               <li><a onClick="use_default_query();">Basic example</a></li>
-               <li><a onClick="use_group_query();">Grouping example</a></li>
-            </ul>
-          </li> -->
+          <li><a onClick="show_language_picker(true);">Change language <span class="label label-warning">Warning!</span></a></li>
           <li class="divider"></li>
+          <li><a href="https://scraperwiki.com/docs/" target="_blank">Scraping tutorials and docs</a></li>
           <li><a href="https://github.com/ajaxorg/ace/wiki/Default-Keyboard-Shortcuts" target="_blank">Editor keyboard shortcuts</a></li>
          </ul>
       </div>
@@ -62,8 +55,11 @@
 
   <div id="languagepicker">
     <h1>Choose language</h1>
+    <p class="languagepicker-warning"><span class="label label-warning">Warning!</span> This will replace your existing code</a></p>
+    </p>
     <ul class="nav nav-tabs nav-stacked">
     </ul>
+    <button class="btn languagepicker-warning" type="button" id="cancel">Cancel</button>
   </div>
 
   </body>

@@ -17,7 +17,7 @@ var online = true // whether browser is online - measured by errors from calling
 // This is an arbitary number we tack onto the end of the document id in ShareJS.
 // Incrementing it forces the code in the browser tool to use a new ShareJS
 // document (and recover the data from the code/scraper file to initialise it)
-var shareJSCode = '046'
+var shareJSCode = '051'
 
 // Spinner options
 var spinnerOpts = {
@@ -111,6 +111,15 @@ var made_state_connection = function(error, doc) {
   })
 }
 
+// Show the language picker
+var show_language_picker = function(warning) {
+  if (warning)
+    $('#languagepicker .languagepicker-warning').show()
+  else
+    $('#languagepicker .languagepicker-warning').hide()
+  $('#languagepicker').show()
+}
+
 // When a language is selected
 var do_language_picked = function(el) {
   var picked_lang = el.target.href.split("#")[1]
@@ -125,6 +134,10 @@ var do_language_picked = function(el) {
     }
   })
   set_loaded_data(data)
+  $('#languagepicker').hide()
+  return false
+}
+var do_language_cancelled = function() {
   $('#languagepicker').hide()
   return false
 }
@@ -153,7 +166,7 @@ var load_code_from_file = function() {
 
     // If nothing there, set some default content to get people going
     if (data.match(/^\s*$/)) {
-      $('#languagepicker').show()
+      show_language_picker()
     } else {
       console.log("...loaded")
       set_loaded_data(data)
@@ -459,6 +472,7 @@ $(document).ready(function() {
     $("#languagepicker ul").append('<li><a href="#' + lang.binary + '">' + lang.human + ' <span style="display: none" class="pull-right muted">#! ' + lang.binary + '</span></a></li>')
   })
   $('#languagepicker a').on('click', do_language_picked)
+  $('#languagepicker #cancel').on('click', do_language_cancelled)
 
   // Bind all the buttons to do something
   $('#bugs').on('click', do_bugs)

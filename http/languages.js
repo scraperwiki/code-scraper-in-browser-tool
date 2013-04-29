@@ -1,5 +1,5 @@
 var languages = [
-  { binary: 'tcc', human: 'C', highlight: 'c_cpp', params: '-run' },
+  { binary: 'tcc', human: 'C', highlight: 'c_cpp' },
   { binary: 'clojure', human: 'Clojure', highlight: 'clojure' },
   { binary: 'coffee', human: 'CoffeeScript', highlight: 'coffee' },
   { binary: 'node', human: 'Node', highlight: 'javascript' },
