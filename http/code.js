@@ -479,6 +479,10 @@ $(document).ready(function() {
       do_run()
       e.preventDefault()
     }
+    // eat ctrl+s for save (see https://github.com/frabcus/code-scraper-in-browser-tool/issues/56)
+    if ((e.ctrlKey || e.metaKey) && e.which==83) {
+      e.preventDefault()
+    }
   })
 })
 
