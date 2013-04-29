@@ -428,6 +428,7 @@ $(document).ready(function() {
 
   // Create editor window, read only until it is ready
   editor = ace.edit("editor")
+  editor.setFontSize(16)
   editor.getSession().setUseSoftTabs(true)
   editor.setTheme("ace/theme/monokai")
   editor.on('change', function() {
@@ -456,6 +457,7 @@ $(document).ready(function() {
 
   // Create the console output window
   output = ace.edit("output")
+  output.setFontSize(16)
   output.setTheme("ace/theme/monokai")
   output.setReadOnly(true)
   // ... we use /bin/sh syntax highlighting, the only other at all
