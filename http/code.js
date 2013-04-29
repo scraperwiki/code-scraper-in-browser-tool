@@ -457,6 +457,7 @@ $(document).ready(function() {
   // Create the console output window
   output = ace.edit("output")
   output.setTheme("ace/theme/monokai")
+  output.setReadOnly(true)
   // ... we use /bin/sh syntax highlighting, the only other at all
   // credible option for such varied output is plain text, which is dull.
   output.getSession().setMode("ace/mode/sh")
