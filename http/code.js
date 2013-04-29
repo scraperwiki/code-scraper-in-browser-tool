@@ -389,6 +389,8 @@ var do_bugs = function() {
 
 // When the "run" button is pressed
 var do_run = function() {
+  // see https://github.com/frabcus/code-scraper-in-browser-tool/issues/55
+  editor.focus()
   // force a check that we have a shebang (#!) line
   clear_alerts()
   var code = editor.getValue()
