@@ -1,0 +1,8 @@
+#!/usr/bin/lua
+
+-- Saving to the database:
+-- require 'lsqlite3'
+-- db=sqlite3.open('scraperwiki.sqlite')
+-- db:exec("CREATE TABLE IF NOT EXISTS animals (id INTEGER, name TEXT, age INTEGER, PRIMARY KEY (id))")
+-- db:exec("INSERT OR REPLACE INTO animals (id, name, age) values (12, 'violet', 7)")
+
