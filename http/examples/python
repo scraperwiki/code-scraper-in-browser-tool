@@ -4,7 +4,7 @@ import scraperwiki
 import requests
 
 html = requests.get("http://www.flourish.org/blog")
-print html
+print html.content
 
 # Saving data:
 # unique_keys = [ 'id' ]
