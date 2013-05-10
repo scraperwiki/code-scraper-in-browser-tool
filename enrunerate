@@ -1,7 +1,6 @@
 #!/bin/bash
 
 PARAM=$1
-FLOCK="flock -n ./running.flock bash -c ./code/scraper"
 REGEXP="./code/scraper"
 
 # Parameters:
@@ -58,7 +57,7 @@ then
     # Use flock to lock the launch, to be sure we only run one copy
     # (we can ignore errors - it is already running and we only want one at a time!)
     # XXX does flock really work on glusterfs?
-    $FLOCK >logs/out 2>&1 &
+    flock -n ./running.flock bash -c "echo 'Started run:' \`date --rfc-3339=seconds\`; ./code/scraper; ERR=\$?; echo 'Finished run:' \`date --rfc-3339=seconds\` 'Exit code:' \$ERR" >logs/out 2>&1 &
 
     # Say it is now running
     echo -n "running"
