@@ -212,7 +212,8 @@ var refresh_saving_message = function() {
     // Wait three seconds and then save. If we get another change
     // in those three seconds, reset that timer to avoid excess saves.
     saveTimeout = setTimeout(save_code, 3000)
-    $("#saved").text("Saving...")
+    //$("#saved").text("Saving...")
+    $("#saved").text("")
   } else {
     $("#saved").text("")
   } 
