@@ -8,7 +8,5 @@ print html.content
 
 # Saving data:
 # unique_keys = [ 'id' ]
-# data = { 'id'=>12, 'name'=>'violet', 'age'=> 7 }
+# data = { 'id':12, 'name':'violet', 'age':7 }
 # scraperwiki.sql.save(unique_keys, data)
-
-
