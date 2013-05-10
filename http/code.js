@@ -305,6 +305,38 @@ var set_status = function(new_status) {
   }
 }
 
+// Set schedule menu from status of crontab
+var get_schedule_for_display = function(use_status) {
+  $("#schedule-button").addClass("loading")
+  $("#schedule .icon-ok").hide()
+  scraperwiki.exec("crontab -l", function(text) {
+    $("#schedule-button").removeClass("loading")
+    if (text.match(/no crontab/)) {
+      $("#schedule-none .icon-ok").show()
+      console.log("schedule looks like: none")
+    } else if (text.match(/@daily/)) {
+      $("#schedule-daily .icon-ok").show()
+      console.log("schedule looks like: daily")
+    } else {
+      console.log("schedule looks like: custom")
+    }
+  }, handle_exec_error)
+}
+
+// When they choose the menu to change schedule
+var set_schedule_none = function() {
+  $("#schedule-button").addClass("loading")
+  scraperwiki.exec("crontab -r", function(text) {
+    get_schedule_for_display()
+  }, handle_exec_error)
+}
+var set_schedule_daily = function() {
+  $("#schedule-button").addClass("loading")
+  scraperwiki.exec("crontab tool/crontab-daily", function(text) {
+    get_schedule_for_display()
+  }, handle_exec_error)
+}
+
 // Check status of running script, and get more output as appropriate
 var enrunerate_and_poll_output = function(action) {
   action = action || ""
@@ -478,6 +510,9 @@ $(document).ready(function() {
   $('#bugs').on('click', do_bugs)
   $('#run').on('click', do_run)
   $('[title]').tooltip()
+
+  // Fill in the schedule
+  get_schedule_for_display()
 
   $(document).on('keydown', function(e){
     // the keycode for "enter" is 13

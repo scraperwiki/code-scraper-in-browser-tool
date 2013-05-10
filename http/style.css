@@ -53,8 +53,15 @@ html {
   margin: 0 auto;
 }
 
+.pointer {
+  cursor: pointer;
+}
 
-
-
+#schedule .icon-ok {
+  margin-left: -18px;
+}
+#schedule a {
+  padding: 3px 39px;
+}
 
 

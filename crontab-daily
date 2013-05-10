@@ -1,0 +1,6 @@
+SHELL=/bin/bash
+
+# Sleep to spread the cron jobs out at least a bit - across an hour after midnight
+@daily sleep $((RANDOM\%60))m; ./tool/enrunerate run
+
+
