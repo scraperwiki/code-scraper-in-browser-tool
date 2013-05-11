@@ -40,7 +40,7 @@ var spinnerOpts = {
 };
 
 // Called when we either load from the box filesystem, or get data from 
-//ShareJS, upon first loading of the page
+// ShareJS, upon first loading of the page
 var done_initial_load = function() {
   // set syntax highlighting a tick later, when we have initial data
   setTimeout(function() {
@@ -282,6 +282,7 @@ var shared_state_update = function(op) {
     }
     status = new_status
     changing = ""
+    set_editor_mode(editor.getValue())
   }
   update_display_from_status(new_status)
 
