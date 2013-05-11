@@ -126,6 +126,7 @@ var do_language_picked = function(el) {
   $.get('examples/' + picked_lang, function(data) {
     set_loaded_data(data)
     update_dirty(true) // force dirty to save the default file
+    clear_console()
     $('#languagepicker').hide()
   });
   return false
@@ -399,6 +400,16 @@ var enrunerate_and_poll_output = function(action) {
 // Clear any errors
 var clear_alerts = function() {
   $(".alert").remove()
+}
+
+// Clear console output
+var clear_console = function() {
+  // only clear if the thing isn't currently running, or would be misleading
+  if (status == "nothing") {
+    output.setValue("")
+    scraperwiki.exec("rm -f logs/out", function(text) {
+    }, handle_exec_error)
+  }
 }
 
 // Save the code - optionally takes text of extra commands to also 
