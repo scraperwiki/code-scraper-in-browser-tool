@@ -243,13 +243,25 @@ var set_editor_mode = function(code) {
   }
 
   // Please add more as you need them and send us a pull request!
+  var got_lang
   editor.getSession().setMode("ace/mode/text")
   $.each(languages, function(ix, lang) {
     if (first.indexOf(lang.binary) != -1) {
+      got_lang = lang
       editor.getSession().setMode("ace/mode/" + lang.highlight)
       return false
     }
   })
+
+  // Remind them they now need: require 'scraperwiki'
+  if (got_lang.binary == 'ruby') {
+   if (code.match(/ScraperWiki\./)) {
+     if (!code.match(/require\s*\(?\s*['"]scraperwiki['"]/)) {
+       scraperwiki.alert("You now need to require the ScraperWiki module!", "Add <code>require 'scraperwiki'</code> to your code. <span class=\"label label-info\">Top tip!</span> You can now install it on any computer with <code>gem install scraperwiki</code>.")
+        return false
+     }
+   }
+  }
 
   return true
 }
