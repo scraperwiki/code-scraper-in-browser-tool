@@ -17,7 +17,7 @@ var online = true // whether browser is online - measured by errors from calling
 // This is an arbitary number we tack onto the end of the document id in ShareJS.
 // Incrementing it forces the code in the browser tool to use a new ShareJS
 // document (and recover the data from the code/scraper file to initialise it)
-var shareJSCode = '054'
+var shareJSCode = '055'
 
 // Spinner options
 var spinnerOpts = {
@@ -157,14 +157,8 @@ var load_code_from_file = function() {
     }
     data = data.replace("swinternalGOTCODEOFSCRAPER", "")
     online = true
-
-    // If nothing there, set some default content to get people going
-    if (data.match(/^\s*$/)) {
-      show_language_picker()
-    } else {
-      console.log("...loaded")
-      set_loaded_data(data)
-    }
+    console.log("...loaded")
+    set_loaded_data(data)
   }, handle_exec_error)
 }
 
@@ -230,6 +224,12 @@ $(window).on('beforeunload', function() {
 
 // Work out language we're in from the shebang line
 var set_editor_mode = function(code) {
+  // for totally blank files, offer language picker
+  if (code.match(/^\s*$/)) {
+    show_language_picker()
+    return false
+  }
+
   var first = code.split("\n")[0]
   if (first.substr(0,2) != "#!") {
     scraperwiki.alert("Specify language in the first line!", "For example, put <code class='inserterHit'>#!/usr/bin/env node</code>, <code class='inserterHit'>#!/usr/bin/env Rscript</code> or <code class='inserterHit'>#!/usr/bin/env python</code>.", false)
@@ -273,9 +273,13 @@ var shared_state_update = function(op) {
   update_display_from_status(new_status)
 
   // Respond to schedule change, by reading it in
-  if (op[0].p[0] == "schedule_update") {
-    get_schedule_for_display()
-  }
+  if (op.length > 0) {
+    if (op[0].p.length > 0) {
+      if (op[0].p[0] == "schedule_update") {
+        get_schedule_for_display()
+      }
+    }
+ }
 }
 
 // Show status in buttons - we have this as we can call it directly
