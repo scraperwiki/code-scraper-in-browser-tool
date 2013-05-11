@@ -17,7 +17,7 @@ var online = true // whether browser is online - measured by errors from calling
 // This is an arbitary number we tack onto the end of the document id in ShareJS.
 // Incrementing it forces the code in the browser tool to use a new ShareJS
 // document (and recover the data from the code/scraper file to initialise it)
-var shareJSCode = '051'
+var shareJSCode = '054'
 
 // Spinner options
 var spinnerOpts = {
@@ -95,7 +95,7 @@ var made_state_connection = function(error, doc) {
   stateShare = doc
   if (stateShare.created) {
     console.log("first time this state document exists on ShareJS server, initialising with 'nothing'")
-    stateShare.submitOp([{p:[],od:null,oi:{status:'nothing'}}])
+    stateShare.submitOp([{p:[],od:null,oi:{status:'nothing', schedule_update:0}}])
   }
   stateShare.on('change', function (op) {
     shared_state_update(op)
@@ -255,8 +255,10 @@ var set_editor_mode = function(code) {
 }
 
 // Got a new state over ShareJS (from ourselves or remote clients)
+var lastop
 var shared_state_update = function(op) {
-  //console.log("shared_state_update", stateShare.snapshot)
+  console.log("shared_state_update", stateShare.snapshot, "op", op)
+  lastop = op
 
   // Respond to the status change
   var new_status = stateShare.snapshot.status
@@ -269,6 +271,11 @@ var shared_state_update = function(op) {
     changing = ""
   }
   update_display_from_status(new_status)
+
+  // Respond to schedule change, by reading it in
+  if (op[0].p[0] == "schedule_update") {
+    get_schedule_for_display()
+  }
 }
 
 // Show status in buttons - we have this as we can call it directly
@@ -328,12 +335,15 @@ var set_schedule_none = function() {
   $("#schedule-button").addClass("loading")
   scraperwiki.exec("crontab -r", function(text) {
     get_schedule_for_display()
+    // we add one to an integer in the shared state JSON array, just as a notification for other windows to refresh the schedule state from actual crontab
+    stateShare.submitOp( {p:['schedule_update'],na:1})
   }, handle_exec_error)
 }
 var set_schedule_daily = function() {
   $("#schedule-button").addClass("loading")
   scraperwiki.exec("crontab tool/crontab-daily", function(text) {
     get_schedule_for_display()
+    stateShare.submitOp( {p:['schedule_update'],na:1})
   }, handle_exec_error)
 }
 
