@@ -17,7 +17,7 @@ var online = true // whether browser is online - measured by errors from calling
 // This is an arbitary number we tack onto the end of the document id in ShareJS.
 // Incrementing it forces the code in the browser tool to use a new ShareJS
 // document (and recover the data from the code/scraper file to initialise it)
-var shareJSCode = '055'
+var shareJSCode = '058'
 
 // Spinner options
 var spinnerOpts = {
@@ -40,7 +40,7 @@ var spinnerOpts = {
 };
 
 // Called when we either load from the box filesystem, or get data from 
-//ShareJS, upon first loading of the page
+// ShareJS, upon first loading of the page
 var done_initial_load = function() {
   // set syntax highlighting a tick later, when we have initial data
   setTimeout(function() {
@@ -126,6 +126,7 @@ var do_language_picked = function(el) {
   $.get('examples/' + picked_lang, function(data) {
     set_loaded_data(data)
     update_dirty(true) // force dirty to save the default file
+    clear_console()
     $('#languagepicker').hide()
   });
   return false
@@ -157,14 +158,8 @@ var load_code_from_file = function() {
     }
     data = data.replace("swinternalGOTCODEOFSCRAPER", "")
     online = true
-
-    // If nothing there, set some default content to get people going
-    if (data.match(/^\s*$/)) {
-      show_language_picker()
-    } else {
-      console.log("...loaded")
-      set_loaded_data(data)
-    }
+    console.log("...loaded")
+    set_loaded_data(data)
   }, handle_exec_error)
 }
 
@@ -230,9 +225,15 @@ $(window).on('beforeunload', function() {
 
 // Work out language we're in from the shebang line
 var set_editor_mode = function(code) {
+  // for totally blank files, offer language picker
+  if (code.match(/^\s*$/)) {
+    show_language_picker()
+    return false
+  }
+
   var first = code.split("\n")[0]
   if (first.substr(0,2) != "#!") {
-    scraperwiki.alert("Specify language in the first line!", "For example, put <code class='inserterHit'>#!/usr/bin/env node</code>, <code class='inserterHit'>#!/usr/bin/env Rscript</code> or <code class='inserterHit'>#!/usr/bin/env python</code>.", false)
+    scraperwiki.alert("Specify language in the first line!", "For example, put <code class='inserterHit'>#!/usr/bin/env python</code>, <code class='inserterHit'>#!/usr/bin/env ruby</code> or <a class=\"pointer\" onClick=\"show_language_picker(true);\">choose a language template</a>.", false)
     $('.inserterHit').click(function() {
       var line = $(this).text() + "\n\n"
       editor.moveCursorTo(0,0)
@@ -243,13 +244,25 @@ var set_editor_mode = function(code) {
   }
 
   // Please add more as you need them and send us a pull request!
+  var got_lang
   editor.getSession().setMode("ace/mode/text")
   $.each(languages, function(ix, lang) {
     if (first.indexOf(lang.binary) != -1) {
+      got_lang = lang
       editor.getSession().setMode("ace/mode/" + lang.highlight)
       return false
     }
   })
+
+  // Remind them they now need: require 'scraperwiki'
+  if (got_lang.binary == 'ruby') {
+   if (code.match(/ScraperWiki\./)) {
+     if (!code.match(/require\s*\(?\s*['"]scraperwiki['"]/)) {
+       scraperwiki.alert("You now need to require the ScraperWiki module!", "Add <code>require 'scraperwiki'</code> to your code. <span class=\"label label-info\">Top tip!</span> You can now install it on any computer with <code>gem install scraperwiki</code>.")
+        return false
+     }
+   }
+  }
 
   return true
 }
@@ -269,13 +282,18 @@ var shared_state_update = function(op) {
     }
     status = new_status
     changing = ""
+    set_editor_mode(editor.getValue())
   }
   update_display_from_status(new_status)
 
   // Respond to schedule change, by reading it in
-  if (op[0].p[0] == "schedule_update") {
-    get_schedule_for_display()
-  }
+  if (op.length > 0) {
+    if (op[0].p.length > 0) {
+      if (op[0].p[0] == "schedule_update") {
+        get_schedule_for_display()
+      }
+    }
+ }
 }
 
 // Show status in buttons - we have this as we can call it directly
@@ -383,6 +401,16 @@ var enrunerate_and_poll_output = function(action) {
 // Clear any errors
 var clear_alerts = function() {
   $(".alert").remove()
+}
+
+// Clear console output
+var clear_console = function() {
+  // only clear if the thing isn't currently running, or would be misleading
+  if (status == "nothing") {
+    output.setValue("")
+    scraperwiki.exec("rm -f logs/out", function(text) {
+    }, handle_exec_error)
+  }
 }
 
 // Save the code - optionally takes text of extra commands to also 
