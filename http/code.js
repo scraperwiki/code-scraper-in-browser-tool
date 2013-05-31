@@ -3,21 +3,13 @@
 var settings
 var editor
 var editorDirty = false
-var editorShare
 var editorSpinner
 var output
 var outputSpinner
 var status = 'nothing' // currently belief about script execution status: 'running' or 'nothing'
 var changing ='' // for starting/stopping states
-var stateShare // various things shared with share.js, including group consideration of the running status
 var saveTimeout // store handle to timeout so can clear it
-var connected = false // whether sharejs is connected - measured by sharejs
 var online = true // whether browser is online - measured by errors from calling exec endpoint
-
-// This is an arbitary number we tack onto the end of the document id in ShareJS.
-// Incrementing it forces the code in the browser tool to use a new ShareJS
-// document (and recover the data from the code/scraper file to initialise it)
-var shareJSCode = '058'
 
 // Spinner options
 var spinnerOpts = {
@@ -39,76 +31,16 @@ var spinnerOpts = {
   left: 'auto' // Left position relative to parent in px
 };
 
-// Called when we either load from the box filesystem, or get data from 
-// ShareJS, upon first loading of the page
+// Called when we load from the box filesystem, upon first loading of the page
 var done_initial_load = function() {
   // set syntax highlighting a tick later, when we have initial data
   setTimeout(function() {
-    //console.log('editor version', editorShare.version, editor.getValue())
     set_editor_mode(editor.getValue())
     editor.setReadOnly(false)
     editor.moveCursorTo(0, 0)
     editor.focus()
     editorSpinner.stop()
   }, 1)
-}
-
-// Wire up shared document on the connection
-var made_editor_connection = function(error, doc) {
-  if (error) {
-    console.log("sharing doc error", error)
-    scraperwiki.alert("Trouble setting up pair editing!", error, true)
-    return
-  }
-  console.log("shared doc")
-
-  editorShare = doc
-  editorShare.attach_ace(editor)
-
-  if (editorShare.created) {
-    console.log("first time this editor document exists on ShareJS server, loading from filesystem")
-    load_code_from_file()
-  } else {
-    done_initial_load()
-  }
-
-  editorShare.on('error', function(error) {
-    console.log("editorShare later error:", error)
-    // if ShareJS server has restarted, we get document missing as an error
-    // just redo everything in this case
-    if (error == "Document does not exist")
-      location.reload()
-    else
-      scraperwiki.alert("Editor sharing error!", error, true)
-  })
-}
-
-// Wire up shared state on the connection
-var made_state_connection = function(error, doc) {
-  if (error) {
-    console.log("sharing state error", error)
-    scraperwiki.alert("Trouble setting up pair state!", error, true)
-    return
-  }
-  console.log("shared state")
-
-  stateShare = doc
-  if (stateShare.created) {
-    console.log("first time this state document exists on ShareJS server, initialising with 'nothing'")
-    stateShare.submitOp([{p:[],od:null,oi:{status:'nothing', schedule_update:0}}])
-  }
-  stateShare.on('change', function (op) {
-    shared_state_update(op)
-  })
-  stateShare.on('error', function (error) {
-    console.log("stateShare later error:", error)
-    // if ShareJS server has restarted, we get document missing as an error
-    // just redo everything in this case
-    if (error == "Document does not exist")
-      location.reload()
-    else
-      scraperwiki.alert("State sharing error!", error, true)
-  })
 }
 
 // Show the language picker
@@ -142,13 +74,12 @@ var do_language_cancelled = function() {
 var set_loaded_data = function(data) {
   clear_alerts()
   set_editor_mode(data)
-  editor.setValue(data) // XXX this overrides what is in filesystem on top of what is in sharejs
+  editor.setValue(data)
   update_dirty(false)
   done_initial_load()
 }
 
-// Used to initialise what is in the ShareJS server from the filesystem the
-// first time run for the instantiation of the ShareJS server.
+// Used to initialise editor from the filesystem 
 var load_code_from_file = function() {
   console.log("loading...")
   scraperwiki.exec('mkdir -p code && touch code/scraper && cat code/scraper && echo -n swinternalGOTCODEOFSCRAPER', function(data) {
@@ -194,11 +125,6 @@ var refresh_saving_message = function() {
   if (!online) {
     $("#saved").text("")
     $("#offline").text("Offline, not connected to the Internet")
-    return
-  }
-  if (!connected) {
-    $("#saved").text("")
-    $("#offline").text("Offline, can't connect to the sharing server")
     return
   }
 
@@ -267,35 +193,6 @@ var set_editor_mode = function(code) {
   return true
 }
 
-// Got a new state over ShareJS (from ourselves or remote clients)
-var lastop
-var shared_state_update = function(op) {
-  console.log("shared_state_update", stateShare.snapshot, "op", op)
-  lastop = op
-
-  // Respond to the status change
-  var new_status = stateShare.snapshot.status
-  if (new_status != status) {
-    console.log("status change", status, "===>", new_status)
-    if (new_status == "running") {
-      enrunerate_and_poll_output()
-    }
-    status = new_status
-    changing = ""
-    set_editor_mode(editor.getValue())
-  }
-  update_display_from_status(new_status)
-
-  // Respond to schedule change, by reading it in
-  if (op.length > 0) {
-    if (op[0].p.length > 0) {
-      if (op[0].p[0] == "schedule_update") {
-        get_schedule_for_display()
-      }
-    }
- }
-}
-
 // Show status in buttons - we have this as we can call it directly
 // to make the run button seem more responsive
 var update_display_from_status = function(use_status) {
@@ -313,7 +210,7 @@ var update_display_from_status = function(use_status) {
 
 // Show/hide things according to current state
 var set_status = function(new_status) {
-  if (!online || !connected || !stateShare) {
+  if (!online) {
     return
   }
 
@@ -322,12 +219,16 @@ var set_status = function(new_status) {
     return
   }
 
-  // Tell other ShareJS clients the status has changed
-  try {
-    stateShare.submitOp( {p:['status'],od:status,oi:new_status})
-  } catch (e) {
-    scraperwiki.alert("Error saving to ShareJS!", e, true)
+
+  if (new_status != status) {
+    console.log("status change", status, "===>", new_status)
+    if (new_status == "running") {
+      enrunerate_and_poll_output()
+    }
+    status = new_status
+    changing = ""
   }
+  update_display_from_status(new_status)
 }
 
 // Set schedule menu from status of crontab
@@ -353,15 +254,12 @@ var set_schedule_none = function() {
   $("#schedule-button").addClass("loading")
   scraperwiki.exec("crontab -r", function(text) {
     get_schedule_for_display()
-    // we add one to an integer in the shared state JSON array, just as a notification for other windows to refresh the schedule state from actual crontab
-    stateShare.submitOp( {p:['schedule_update'],na:1})
   }, handle_exec_error)
 }
 var set_schedule_daily = function() {
   $("#schedule-button").addClass("loading")
   scraperwiki.exec("crontab tool/crontab-daily", function(text) {
     get_schedule_for_display()
-    stateShare.submitOp( {p:['schedule_update'],na:1})
   }, handle_exec_error)
 }
 
@@ -418,12 +316,7 @@ var clear_console = function() {
 var save_code = function(callback) {
   clearTimeout(saveTimeout) // stop any already scheduled timed saves
 
-  if (!editorShare) {
-    console.log("not saving, no share connection")
-    return
-  }
-
-  console.log("save_code... version", editorShare.version)
+  console.log("save_code...")
   var code = editor.getValue()
   var sep = ""
   if (code.length == 0 || code.charAt(code.length - 1) != "\n") {
@@ -508,23 +401,8 @@ $(document).ready(function() {
   editor.setReadOnly(true)
   editorSpinner = new Spinner(spinnerOpts).spin($('#editor')[0])
 
-  // Initialise the ShareJS connections - it will automaticaly reuse the connection
-  console.log("connecting...")
-  // ... for now we use the publish token. We should use the API key, when it is per dataset not per user.
-  var access_token = settings.source.publishToken
-  connection = sharejs.open('scraperwiki-' + scraperwiki.box + '-' + access_token + '-doc' + shareJSCode, 'text', 'http://seagrass.goatchurch.org.uk/sharejs/channel', made_editor_connection)
-  sharejs.open('scraperwiki-' + scraperwiki.box + '-' + access_token + '-state' + shareJSCode, 'json', 'http://seagrass.goatchurch.org.uk/sharejs/channel', made_state_connection)
-  connection.on("error", function(e) {
-    console.log("sharejs connection: error")
-    connected = false
-    refresh_saving_message()
-  })
-  connection.on("ok", function(e) {
-    console.log("sharejs connection: ok")
-    connected = true
-    online = true
-    refresh_saving_message()
-  })
+  // Load initial code
+  load_code_from_file()
 
   // Create the console output window
   output = ace.edit("output")
@@ -551,6 +429,7 @@ $(document).ready(function() {
 
   // Fill in the schedule
   get_schedule_for_display()
+  refresh_saving_message()
 
   $(document).on('keydown', function(e){
     // the keycode for "enter" is 13
