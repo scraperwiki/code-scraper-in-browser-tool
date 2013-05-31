@@ -33,7 +33,7 @@
   <form id="buttonbar" action="#" method="POST" enctype="multipart/form-data">
     <!--<input type="button" value="Run!" id="run"> -->
     <button class="btn btn-primary" type="button" id="run" title="Ctrl+Enter, ⌘+Enter">Run!</button>
-    <div class="btn-group dropup" id="schedule">
+    <div class="btn-group" id="schedule">
       <button id="schedule-button" class="btn dropdown-toggle" data-toggle="dropdown" href="#">Schedule <span class="caret"></span></button>
       <ul class="dropdown-menu pull-left">
         <li><a onClick="set_schedule_none()" class="pointer" id="schedule-none"><i class="icon-ok" style="display: none"></i> None</a></li>
@@ -45,13 +45,14 @@
     <div id="rightbar">
       <button class="btn btn-danger" type="button" id="bugs">Report Bug</button>
 
-      <div class="btn-group dropup" id="help">
+      <div class="btn-group" id="help">
         <a class="btn btn-info dropdown-toggle" data-toggle="dropdown" href="#">Help <span class="caret"></span></a>
         <ul class="dropdown-menu pull-right">
-          <li><a onClick="show_language_picker(true);" class="pointer">Change language <span class="label label-warning">Warning!</span></a></li>
-          <li class="divider"></li>
+          <li><a href="https://beta.scraperwiki.com/help/code-in-your-browser/" target="_blank">Quick start guide</a></li>
           <li><a href="https://scraperwiki.com/docs/" target="_blank">Scraping tutorials and docs</a></li>
           <li><a href="https://github.com/ajaxorg/ace/wiki/Default-Keyboard-Shortcuts" target="_blank">Editor keyboard shortcuts</a></li>
+          <li class="divider"></li>
+          <li><a onClick="show_language_picker(true);" class="pointer">Change language <span class="label label-warning">Warning!</span></a></li>
          </ul>
       </div>
 
