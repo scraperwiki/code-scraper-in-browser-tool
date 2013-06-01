@@ -395,6 +395,7 @@ $(document).ready(function() {
   editor.setFontSize(16)
   editor.getSession().setUseSoftTabs(true)
   editor.setTheme("ace/theme/monokai")
+  editor.renderer.setShowPrintMargin(false)
   editor.on('change', function() {
     update_dirty(true)
   })

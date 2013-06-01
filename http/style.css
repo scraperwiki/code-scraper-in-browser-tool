@@ -1,39 +1,50 @@
 body {
   height: 100%;
-  padding: 1px;
+  width: 100%;
+  padding: 0px;
+  display: table;
 }
 html {
   height: 100%;
 }
 
+#editorPanel { 
+  width: 100%;
+  height: 60%;
+  display: table-row;
+}
 #editor { 
   width: 100%;
-  height: 55%
+  height: 100%;
 }
 
+#buttonbarPanel {
+  width: 100%;
+  z-index: 999;
+  display: table-row;
+}
 #buttonbar {
+  padding: 14px;
   margin: 0 0 10px 0;
-  padding: 8px;
-
-  border-top: 1px solid #ddd; 
-
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
-
   -webkit-box-shadow: 0 0 10px 0 rgba(0,0,0,0.3);
   -moz-box-shadow: 0 0 10px 0 rgba(0,0,0,0.3);
   box-shadow: 0 0 10px 0 rgba(0,0,0,0.3);
 }
 
+#outputPanel { 
+  height: 40%;
+  width: 100%;
+  display: table-row;
+
+}
 #output { 
   width: 100%;
-  height: 40%;
+  height: 100%;
 }
 
-/* #output .ace_scroller {
-  background-color: #e4e8ee
-} */
+#output .ace_scroller {
+  padding: 6px 0px 10px 10px;
+} 
 
 #output .ace_hidden-cursors .ace_cursor {
   opacity: 0;
