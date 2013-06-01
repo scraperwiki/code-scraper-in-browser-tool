@@ -5,17 +5,38 @@ body {
 html {
   height: 100%;
 }
+
 #editor { 
   width: 100%;
   height: 55%
 }
+
+#buttonbar {
+  margin: 0 0 10px 0;
+  padding: 8px;
+
+  border-top: 1px solid #ddd; 
+
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+
+  -webkit-box-shadow: 0 0 10px 0 rgba(0,0,0,0.3);
+  -moz-box-shadow: 0 0 10px 0 rgba(0,0,0,0.3);
+  box-shadow: 0 0 10px 0 rgba(0,0,0,0.3);
+}
+
 #output { 
   width: 100%;
   height: 40%;
 }
 
-#buttonbar {
-  margin: 2px;
+/* #output .ace_scroller {
+  background-color: #e4e8ee
+} */
+
+#output .ace_hidden-cursors .ace_cursor {
+  opacity: 0;
 }
 
 #rightbar {

@@ -407,7 +407,10 @@ $(document).ready(function() {
   // Create the console output window
   output = ace.edit("output")
   output.setFontSize(16)
-  output.setTheme("ace/theme/monokai")
+  output.setTheme("ace/theme/clouds")
+  output.renderer.setShowGutter(false)
+  output.renderer.setShowPrintMargin(false)
+  output.setHighlightActiveLine(false)
   output.setReadOnly(true)
   // ... we use /bin/sh syntax highlighting, the only other at all
   // credible option for such varied output is plain text, which is dull.
