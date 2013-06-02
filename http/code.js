@@ -12,7 +12,7 @@ var saveTimeout // store handle to timeout so can clear it
 var online = true // whether browser is online - measured by errors from calling exec endpoint
 
 // Spinner options
-var spinnerOpts = {
+var spinnerOptsWhite = {
   lines: 12, // The number of lines to draw
   length: 7, // The length of each line
   width: 4, // The line thickness
@@ -30,6 +30,8 @@ var spinnerOpts = {
   top: 'auto', // Top position relative to parent in px
   left: 'auto' // Left position relative to parent in px
 };
+var spinnerOptsBlack = _.clone(spinnerOptsWhite)
+spinnerOptsBlack.color = '#000'
 
 // Called when we load from the box filesystem, upon first loading of the page
 var done_initial_load = function() {
@@ -400,7 +402,7 @@ $(document).ready(function() {
     update_dirty(true)
   })
   editor.setReadOnly(true)
-  editorSpinner = new Spinner(spinnerOpts).spin($('#editor')[0])
+  editorSpinner = new Spinner(spinnerOptsWhite).spin($('#editor')[0])
 
   // Load initial code
   load_code_from_file()
@@ -416,7 +418,7 @@ $(document).ready(function() {
   // ... we use /bin/sh syntax highlighting, the only other at all
   // credible option for such varied output is plain text, which is dull.
   output.getSession().setMode("ace/mode/sh")
-  outputSpinner = new Spinner(spinnerOpts).spin($('#output')[0])
+  outputSpinner = new Spinner(spinnerOptsBlack).spin($('#output')[0])
   enrunerate_and_poll_output()
 
   // Fill in the language picker
