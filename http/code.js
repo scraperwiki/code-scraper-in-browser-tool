@@ -423,7 +423,11 @@ $(document).ready(function() {
 
   // Fill in the language picker
   $.each(languages, function(ix, lang) {
-    $("#languagepicker ul").append('<li><a href="#' + lang.binary + '">' + lang.human + ' <span style="display: none" class="pull-right muted">#! ' + lang.binary + '</span></a></li>')
+    var cls = "secondary collapse out"
+    if (lang.primary) {
+      cls = ""
+    }
+    $("#languagepicker ul").append('<li class="' + cls + '"><a href="#' + lang.binary + '">' + lang.human + ' <span style="display: none" class="pull-right muted">#! ' + lang.binary + '</span></a></li>')
   })
   $('#languagepicker a').on('click', do_language_picked)
   $('#languagepicker #cancel').on('click', do_language_cancelled)
