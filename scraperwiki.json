@@ -1,4 +1,6 @@
 {
   "displayName": "Code in your browser",
-  "description": "Just like you used to on ScraperWiki Classic"
+  "description": "Just like you used to on ScraperWiki Classic",
+  "icon": "https://s3-eu-west-1.amazonaws.com/sw-icons/tool-icon-classic.png",
+  "color": "#6AAFD1"
 }
