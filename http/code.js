@@ -234,7 +234,7 @@ var set_status = function(new_status) {
 }
 
 // Set schedule menu from status of crontab
-var get_schedule_for_display = function(use_status) {
+var get_schedule_for_display = function() {
   $("#schedule-button").addClass("loading")
   $("#schedule .icon-ok").hide()
   scraperwiki.exec("crontab -l", function(text) {
