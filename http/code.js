@@ -270,7 +270,7 @@ var enrunerate_and_poll_output = function(action) {
   action = action || ""
   command = "./tool/enrunerate " + action
   if (action == "run") {
-    command = "(export GIT_AUTHOR_NAME='Anonymous'; cd code; git init; git add scraper; git commit -am 'Ran code in browser') >/dev/null; " + command
+    command = "(git config --global user.email $(whoami); git config --global user.name Anon; cd code; git init; git add scraper; git commit -am 'Ran code in browser') >/dev/null; " + command
   }
 
   scraperwiki.exec(command, function(text) {
