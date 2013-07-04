@@ -202,9 +202,9 @@ var update_display_from_status = function(use_status) {
   if (changing == "starting") {
     $("#run").text("Starting...").addClass("btn-warning").addClass('loading')
   } else if (changing == "stopping") {
-    $("#run").text("Stopping...").addClass("btn-danger").addClass('loading')
+    $("#run").text("Stopping...").addClass("btn-warning").addClass('loading')
   } else if (use_status == "running") {
-    $("#run").text("Running...").addClass("btn-success").addClass('loading')
+    $("#run").text("Stop!").addClass("btn-danger")
   } else if (use_status == "nothing") {
     $("#run").text("Run!").addClass("btn-primary")
   }
