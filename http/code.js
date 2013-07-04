@@ -37,6 +37,7 @@ spinnerOptsBlack.color = '#000'
 var done_initial_load = function() {
   // set syntax highlighting a tick later, when we have initial data
   setTimeout(function() {
+    clear_alerts()
     set_editor_mode(editor.getValue())
     editor.setReadOnly(false)
     editor.moveCursorTo(0, 0)
