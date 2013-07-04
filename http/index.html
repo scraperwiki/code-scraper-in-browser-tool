@@ -36,7 +36,19 @@
       <button id="schedule-button" class="btn dropdown-toggle" data-toggle="dropdown" href="#">Schedule <span class="caret"></span></button>
       <ul class="dropdown-menu pull-left">
         <li><a onClick="set_schedule_none()" class="pointer" id="schedule-none"><i class="icon-ok" style="display: none"></i> None</a></li>
-        <li><a onClick="set_schedule_daily()" class="pointer" id="schedule-daily"><i class="icon-ok" style="display: none"></i> Daily</a></li>
+        <li class="dropdown-submenu">
+          <a onClick="set_schedule_daily(0)" class="pointer" id="schedule-daily"><i class="icon-ok" style="display: none"></i> Daily at</a>
+          <ul class="dropdown-menu">
+             <li><a onClick="set_schedule_daily(0)" class="pointer" id="schedule-daily-0"><i class="icon-ok" style="display: none"></i> Midnight</a></li>
+             <li><a onClick="set_schedule_daily(3)" class="pointer" id="schedule-daily-3"><i class="icon-ok" style="display: none"></i> 3am </a></li>
+             <li><a onClick="set_schedule_daily(6)" class="pointer" id="schedule-daily-6"><i class="icon-ok" style="display: none"></i> 6am </a></li>
+             <li><a onClick="set_schedule_daily(9)" class="pointer" id="schedule-daily-9"><i class="icon-ok" style="display: none"></i> 9am </a></li>
+             <li><a onClick="set_schedule_daily(12)" class="pointer" id="schedule-daily-12"><i class="icon-ok" style="display: none"></i> Noon </a></li>
+             <li><a onClick="set_schedule_daily(15)" class="pointer" id="schedule-daily-15"><i class="icon-ok" style="display: none"></i> 3pm </a></li>
+             <li><a onClick="set_schedule_daily(18)" class="pointer" id="schedule-daily-18"><i class="icon-ok" style="display: none"></i> 6pm </a></li>
+             <li><a onClick="set_schedule_daily(21)" class="pointer" id="schedule-daily-21"><i class="icon-ok" style="display: none"></i> 9pm <span class="muted">(all in UTC)</span></a></li>
+          </ul>
+        </li>
       </ul>
     </div>
     <span class="muted" id="saved"></span>
