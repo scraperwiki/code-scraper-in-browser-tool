@@ -250,6 +250,9 @@ var get_schedule_for_display = function() {
       $("#schedule-daily-" + matches[1] + " .icon-ok").show()
       $("#schedule-daily .icon-ok").show()
       console.log("schedule looks like: daily at " + matches[1] + " hour")
+    } else if (text.match(/THIS_IS_HOURLY/)) {
+      $("#schedule-hourly .icon-ok").show()
+      console.log("schedule looks like: hourly")
     } else {
       console.log("schedule looks like: custom")
     }
@@ -266,6 +269,13 @@ var set_schedule_none = function() {
 var set_schedule_daily = function(hour) {
   $("#schedule-button").addClass("loading")
   scraperwiki.exec("cat tool/crontab-daily | sed s/HOUR/" + hour + "/ | crontab -", function(text) {
+    get_schedule_for_display()
+  }, handle_exec_error)
+}
+var set_schedule_hourly = function() {
+  $("#schedule-button").addClass("loading")
+  var minute = Math.floor(60*Math.random())
+  scraperwiki.exec("cat tool/crontab-hourly | sed s/MINUTE/" + minute + "/ | crontab -", function(text) {
     get_schedule_for_display()
   }, handle_exec_error)
 }

@@ -1,0 +1,7 @@
+SHELL=/bin/bash
+
+# THIS_IS_HOURLY
+
+MINUTE * * * * ./tool/enrunerate run
+
+
