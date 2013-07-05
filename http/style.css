@@ -51,17 +51,6 @@ html {
   opacity: 0;
 }
 
-#rightbar {
-  float: right;
-  margin-right: 2px;
-}
-
-#saved {
-  margin-top: 5px; /* this is a hack to get vertical align, should be done better somehow */
-  margin-left: 5px;
-  margin-right: 5px;
-}
-
 .inserterHit {
   cursor: pointer;
 }
@@ -101,4 +90,17 @@ html {
 .alert {
   margin-bottom: 0;
 }
+
+#offline, #offline:hover {
+  color: #ff0000;
+  text-decoration: none;
+}
+
+#running-status {
+  background: transparent url(//scraperwiki.com/image/loader-btn-default.gif) 8px 5px no-repeat;
+}
+#running-status:hover {
+  text-decoration: none;
+}
+
 

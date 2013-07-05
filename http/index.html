@@ -29,9 +29,7 @@
   </div>
 
   <div id="buttonbarPanel">
-  <form id="buttonbar" action="#" method="POST" enctype="multipart/form-data">
-    <!--<input type="button" value="Run!" id="run"> -->
-    <button class="btn btn-primary" type="button" id="run" title="Ctrl+Enter, ⌘+Enter">Run!</button>
+  <div id="buttonbar" class="btn-toolbar">
     <div class="btn-group dropup" id="schedule">
       <button id="schedule-button" class="btn dropdown-toggle" data-toggle="dropdown" href="#">Schedule <span class="caret"></span></button>
       <ul class="dropdown-menu pull-left">
@@ -53,28 +51,29 @@
         <li><a onClick="set_schedule_monthly()" class="pointer" id="schedule-monthly"><i class="icon-ok" style="display: none"></i> Monthly</a>
       </ul>
     </div>
-    <span class="muted" id="saved"></span>
-    <span class="text-error" id="offline"></span>
-    <div id="rightbar">
-      <button class="btn btn-danger" type="button" id="bugs">Report Bug</button>
 
-      <div class="btn-group dropup" id="help">
-        <a class="btn btn-info dropdown-toggle" data-toggle="dropdown" href="#">Help <span class="caret"></span></a>
-        <ul class="dropdown-menu pull-right">
-          <li><a href="https://beta.scraperwiki.com/help/code-in-your-browser/" target="_blank">Quick start guide</a></li>
-          <li><a href="https://github.com/frabcus/code-scraper-in-browser-tool/wiki" target="_blank">Scraping tutorials</a></li>
-          <li><a href="https://github.com/frabcus/code-scraper-in-browser-tool/wiki/Frequently-asked-questions" target="_blank">Frequently Asked Questions</a></li>
-          <li class="divider"></li>
-          <li><a href="https://github.com/scraperwiki/scraperwiki-python" target="_blank">Python package (scraperwiki)</a></li>
-          <li><a href="https://github.com/scraperwiki/scraperwiki-ruby" target="_blank">Ruby gem (scraperwiki)</a></li>
-          <li><a onClick="show_language_picker(true);" class="pointer">Change language <span class="label label-warning">Warning!</span></a></li>
-          <li class="divider"></li>
-          <li><a href="https://github.com/ajaxorg/ace/wiki/Default-Keyboard-Shortcuts" target="_blank">Editor keyboard shortcuts</a></li>
-         </ul>
-      </div>
+    <button disabled class="btn btn-primary" type="button" id="run" title="Ctrl+Enter, ⌘+Enter">Run!</button>
 
+    <span class="btn btn-link muted loading hide" id="running-status"></span>
+    <span class="btn btn-link" id="offline"></span>
+
+    <button class="pull-right btn btn-danger" type="button" id="bugs">Report Bug</button>
+
+    <div class="pull-right btn-group dropup" id="help">
+      <a class="btn btn-info dropdown-toggle" data-toggle="dropdown" href="#">Help <span class="caret"></span></a>
+      <ul class="dropdown-menu pull-right">
+        <li><a href="https://beta.scraperwiki.com/help/code-in-your-browser/" target="_blank">Quick start guide</a></li>
+        <li><a href="https://github.com/frabcus/code-scraper-in-browser-tool/wiki" target="_blank">Scraping tutorials</a></li>
+        <li><a href="https://github.com/frabcus/code-scraper-in-browser-tool/wiki/Frequently-asked-questions" target="_blank">Frequently Asked Questions</a></li>
+        <li class="divider"></li>
+        <li><a href="https://github.com/scraperwiki/scraperwiki-python" target="_blank">Python package (scraperwiki)</a></li>
+        <li><a href="https://github.com/scraperwiki/scraperwiki-ruby" target="_blank">Ruby gem (scraperwiki)</a></li>
+        <li><a onClick="show_language_picker(true);" class="pointer">Change language <span class="label label-warning">Warning!</span></a></li>
+        <li class="divider"></li>
+        <li><a href="https://github.com/ajaxorg/ace/wiki/Default-Keyboard-Shortcuts" target="_blank">Editor keyboard shortcuts</a></li>
+      </ul>
     </div>
-  </form>
+  </div>
   </div>
 
   <div id="outputPanel">
