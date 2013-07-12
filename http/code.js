@@ -428,6 +428,7 @@ $(document).ready(function() {
   editor = ace.edit("editor")
   editor.setFontSize(16)
   editor.getSession().setUseSoftTabs(true)
+  editor.getSession().setNewLineMode("unix")
   editor.setTheme("ace/theme/monokai")
   editor.renderer.setShowPrintMargin(false)
   editor.on('change', function() {
