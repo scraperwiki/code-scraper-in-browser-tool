@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Called from enrunerate, which does the process handling part
+
+echo 'Started run:' `date --rfc-3339=seconds`
+
+./code/scraper
+ERR=$?
+
+if [ "$ERR" == "0" ]
+then
+  curl -s --data "type=ok" "https://scraperwiki.com/api/status" > /dev/null
+else
+  curl -s --data "type=error" "https://scraperwiki.com/api/status" > /dev/null
+fi
+
+echo 'Finished run:' `date --rfc-3339=seconds` 'Exit code:' $ERR
