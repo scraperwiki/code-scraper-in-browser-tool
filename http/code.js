@@ -126,7 +126,6 @@ var refresh_saving_message = function() {
   clearTimeout(saveTimeout)
 
   if (!online) {
-    $("#saved").text("")
     $("#offline").text("Offline, not connected to the Internet")
     return
   }
@@ -137,9 +136,8 @@ var refresh_saving_message = function() {
     // in those three seconds, reset that timer to avoid excess saves.
     saveTimeout = setTimeout(save_code, 3000)
     //$("#saved").text("Saving...")
-    $("#saved").text("")
   } else {
-    $("#saved").text("")
+    //$("#saved").text("")
   } 
 }
 
@@ -199,15 +197,24 @@ var set_editor_mode = function(code) {
 // Show status in buttons - we have this as we can call it directly
 // to make the run button seem more responsive
 var update_display_from_status = function(use_status) {
-  $("#run").removeClass("btn-primary").removeClass("btn-danger").removeClass("btn-warning").removeClass("btn-success").removeClass('loading')
   if (changing == "starting") {
-    $("#run").text("Starting...").addClass("btn-warning").addClass('loading')
+    $("#run").attr("disabled", true)
   } else if (changing == "stopping") {
-    $("#run").text("Stopping...").addClass("btn-warning").addClass('loading')
+    $("#run").attr("disabled", true)
   } else if (use_status == "running") {
-    $("#run").text("Stop!").addClass("btn-danger")
+    $("#run").text("Stop!").removeClass("btn-primary").addClass("btn-danger").attr("disabled", false)
   } else if (use_status == "nothing") {
-    $("#run").text("Run!").addClass("btn-primary")
+    $("#run").text("Run!").removeClass("btn-danger").addClass("btn-primary").attr("disabled", false)
+  }
+
+  if (changing == "starting") {
+    $("#running-status").html("Starting&hellip;").show()
+  } else if (changing == "stopping") {
+    $("#running-status").html("Stopping&hellip;").show()
+  } else if (use_status == "running") {
+    $("#running-status").html("Running&hellip;").show()
+  } else if (use_status == "nothing") {
+    $("#running-status").hide()
   }
 }
 
@@ -421,6 +428,7 @@ $(document).ready(function() {
   editor = ace.edit("editor")
   editor.setFontSize(16)
   editor.getSession().setUseSoftTabs(true)
+  editor.getSession().setNewLineMode("unix")
   editor.setTheme("ace/theme/monokai")
   editor.renderer.setShowPrintMargin(false)
   editor.on('change', function() {
@@ -460,7 +468,6 @@ $(document).ready(function() {
   // Bind all the buttons to do something
   $('#bugs').on('click', do_bugs)
   $('#run').on('click', do_run)
-  $('[title]').tooltip()
 
   // Fill in the schedule
   get_schedule_for_display()
