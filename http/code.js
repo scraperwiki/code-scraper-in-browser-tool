@@ -46,6 +46,18 @@ var done_initial_load = function() {
   }, 1)
 }
 
+// Clear dataset
+var clear_dataset = function(warning) {
+  $("#clear .dropdown-toggle").addClass("loading")
+  scraperwiki.exec('rm -f scraperwiki.sqlite', function(data) {
+    $("#clear .dropdown-toggle").removeClass("loading")
+    if (data != '') {
+      scraperwiki.alert("Trouble clearing datastore!", data, true)
+      return
+    }
+  }, handle_exec_error)
+}
+
 // Show the language picker
 var show_language_picker = function(warning) {
   if (warning)
@@ -199,21 +211,15 @@ var set_editor_mode = function(code) {
 var update_display_from_status = function(use_status) {
   if (changing == "starting") {
     $("#run").attr("disabled", true)
-  } else if (changing == "stopping") {
-    $("#run").attr("disabled", true)
-  } else if (use_status == "running") {
-    $("#run").text("Stop!").removeClass("btn-primary").addClass("btn-danger").attr("disabled", false)
-  } else if (use_status == "nothing") {
-    $("#run").text("Run!").removeClass("btn-danger").addClass("btn-primary").attr("disabled", false)
-  }
-
-  if (changing == "starting") {
     $("#running-status").html("Starting&hellip;").show()
   } else if (changing == "stopping") {
+    $("#run").attr("disabled", true)
     $("#running-status").html("Stopping&hellip;").show()
   } else if (use_status == "running") {
+    $("#run").text("Stop!").removeClass("btn-primary").addClass("btn-danger").attr("disabled", false)
     $("#running-status").html("Running&hellip;").show()
   } else if (use_status == "nothing") {
+    $("#run").text("Run!").removeClass("btn-danger").addClass("btn-primary").attr("disabled", false)
     $("#running-status").hide()
   }
 }
