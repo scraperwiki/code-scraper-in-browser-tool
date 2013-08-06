@@ -309,7 +309,7 @@ var enrunerate_and_poll_output = function(action) {
       // ... but if script is still "running" we'll trigger the timer to do it again
       again = true
     }
-    scraperwiki.exec("tail --lines=10000 logs/out", function(text) {
+    scraperwiki.exec("touch logs/out; tail --lines=10000 logs/out", function(text) {
       // XXX detect no file a better way
       if (text != "cat: logs/out: No such file or directory\n") {
         output.setValue(text)
