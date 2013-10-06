@@ -1,18 +1,15 @@
 #!/usr/bin/env php
 <?
 
-/* 
+require 'scraperwiki.php';
 
-// RedBeanPHP makes the database table for you http://redbeanphp.com/
-require 'rb.php';
+$html = scraperwiki::scrape("http://www.flourish.org/blog");
+print $html;
 
-R::setup('sqlite:scraperwiki.sqlite');
-$animal = R::dispense('animal');
-$animal->name = 'Violet';
-$animal->age = 7;
-$id = R::store($animal);
-
-*/
+# Saving data:
+# $unique_keys = array('id');
+# $row = array('id'=>12, 'name'=>'violet', 'age'=>7);
+# scraperwiki::save_sqlite($unique_keys, $row);
 
 ?>
 
