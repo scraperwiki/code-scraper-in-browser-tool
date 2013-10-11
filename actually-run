@@ -2,6 +2,9 @@
 
 # Called from enrunerate, which does the process handling part
 
+echo '*** Love playing with data? ScraperWiki is hiring: https://blog.scraperwiki.com/jobs/swjob10/ ***'
+echo
+
 echo 'Started run:' `date --rfc-3339=seconds`
 
 ./code/scraper
