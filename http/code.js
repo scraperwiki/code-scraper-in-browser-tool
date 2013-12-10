@@ -463,7 +463,7 @@ $(document).ready(function() {
   // Fill in the language picker
   $.each(languages, function(ix, lang) {
     var cls = "secondary collapse out"
-    if (lang.primary) {
+    if ('primary' in lang && lang.primary == true) {
       cls = ""
     }
     $("#languagepicker ul").append('<li class="' + cls + '"><a href="#' + lang.binary + '">' + lang.human + ' <span style="display: none" class="pull-right muted">#! ' + lang.binary + '</span></a></li>')
