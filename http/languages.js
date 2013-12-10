@@ -12,7 +12,7 @@ var languages = [
   { binary: 'Rscript', human: 'R', highlight: 'r', primary: true },
   { binary: 'ruby', human: 'Ruby', highlight: 'ruby', primary: true },
   { binary: 'sh', human: 'Shell', highlight: 'sh' },
-  { binary: 'xxx', human: 'Other (edit the #! line)', highlight: 'python' },
+  { binary: 'xxx', human: 'Other (edit the #! line)', highlight: 'python' }
 ]
 
 
