@@ -89,8 +89,7 @@ var do_language_cancelled = function() {
 var set_loaded_data = function(data) {
   clear_alerts()
   set_editor_mode(data)
-  editor.setValue(data)
-  editor.getSession().getUndoManager().reset() // or else the user can undo the setValue
+  editor.getSession().setValue(data)
   update_dirty(false)
   done_initial_load()
 }
