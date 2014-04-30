@@ -56,7 +56,6 @@ then
 
     # Use flock to lock the launch, to be sure we only run one copy
     # (we can ignore errors - it is already running and we only want one at a time!)
-    # XXX does flock really work on glusterfs?
     flock -n ./running.flock bash -c "tool/actually-run" >logs/out 2>&1 &
 
     # Say it is now running
