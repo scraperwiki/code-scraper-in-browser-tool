@@ -4,8 +4,17 @@
 
 echo 'Started run:' `date --rfc-3339=seconds`
 
-./code/scraper
+# kill after 1 hour
+timeout --kill-after=1m 1h ./code/scraper
 ERR=$?
+
+if [ "$ERR" == "124" ]
+then
+  echo "Run stopped, taking more than 1 hour"
+elif [ "$ERR" == "137" ]
+then
+  echo "Run killed, taking more than 1 hour, and wouldn't exit upon request"
+fi
 
 if [ "$ERR" == "0" ]
 then
