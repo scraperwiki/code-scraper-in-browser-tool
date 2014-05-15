@@ -5,7 +5,7 @@
 echo 'Started run:' `date --rfc-3339=seconds`
 
 # kill after 1 hour
-timeout 1h --kill-after=1m ./code/scraper
+timeout --kill-after=1m 1h ./code/scraper
 ERR=$?
 
 if [ "$ERR" == "124" ]
