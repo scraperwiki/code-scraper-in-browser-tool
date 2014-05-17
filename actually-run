@@ -8,12 +8,15 @@ echo 'Started run:' `date --rfc-3339=seconds`
 timeout --kill-after=1m 1h ./code/scraper
 ERR=$?
 
-if [ "$ERR" == "124" ]
+# GNU timeout is documented as returning 124 on a timeout
+# Also saw cases of 143 = 128 + 15, i.e. a SIGTERM (see https://github.com/scraperwiki/code-scraper-in-browser-tool/issues/131)
+if [ "$ERR" == "124" -o "$ERR" == "143" ]
 then
-  echo "Run stopped, taking more than 1 hour"
+  echo "Run stopped by ScraperWiki, taking more than 1 hour"
+# 137 = 128 + 9 which is what timeout returns on catching a SIGKILL
 elif [ "$ERR" == "137" ]
 then
-  echo "Run killed, taking more than 1 hour, and wouldn't exit upon request"
+  echo "Run killed by ScraperWiki, taking more than 1 hour, and wouldn't exit upon request"
 fi
 
 if [ "$ERR" == "0" ]
