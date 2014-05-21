@@ -2,6 +2,9 @@
 
 # Called from enrunerate, which does the process handling part
 
+echo '*** Software Engineer? We're hiring at ScraperWiki! https://blog.scraperwiki.com/jobs/data-engineer-liverpool-25k-to-35k/ ***'
+echo
+
 echo 'Started run:' `date --rfc-3339=seconds`
 
 # kill after 1 hour
